@@ -1,4 +1,4 @@
-package gov.usgs.cida.geoutils.geoutils.commons;
+package gov.usgs.cida.owsutils.commons;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -574,7 +574,7 @@ public class FileHelper {
      * @param recursive
      * @return
      */
-    static Collection<File> getFilesOlderThan(File filePath, Long age, Boolean recursive) {
+    public static Collection<File> getFilesOlderThan(File filePath, Long age, Boolean recursive) {
         if (filePath == null || !filePath.exists()) {
             return new ArrayList<File>();
         }
@@ -601,7 +601,6 @@ public class FileHelper {
     }
 
     public static Boolean validateShapeFile(final File shapeFile) {
-
         String shapefileName = shapeFile.getName();
         String shapefileNamePrefix = shapefileName.substring(0, shapefileName.lastIndexOf("."));
         File shapefileDir = shapeFile.getParentFile();
@@ -634,20 +633,15 @@ public class FileHelper {
         return true;
     }
 
-    public static Boolean validateShapeZIP(final File shapeZip) throws IOException {
-        File tempDir = new File(FileUtils.getTempDirectory(), UUID.randomUUID().toString() + "-deleteme");
-        tempDir.deleteOnExit();
-
-        FileUtils.forceMkdir(tempDir);
+    public static Boolean validateShapefileZip(final File shapeZip) throws IOException {
+        File temporaryDirectory = File.createTempFile(UUID.randomUUID().toString(), "deleteme", FileUtils.getTempDirectory());
+        temporaryDirectory.deleteOnExit();
 
         int bufferLength = 2048;
         byte buffer[] = new byte[bufferLength];
 
-        ZipInputStream zipInputStream = new ZipInputStream(
-                new BufferedInputStream(new FileInputStream(shapeZip)));
-
+        ZipInputStream zipInputStream = new ZipInputStream(new BufferedInputStream(new FileInputStream(shapeZip)));
         ZipEntry entry;
-
         while ((entry = zipInputStream.getNextEntry()) != null) {
             String currentExtension = entry.getName();
             // We want to skip past directories and metadata files (MACOSX ZIPPING FIX)
@@ -655,7 +649,7 @@ public class FileHelper {
                     && !currentExtension.startsWith(".")
                     && !currentExtension.contains(File.separator + ".")) {
 
-                File currentFile = new File(tempDir, entry.getName());
+                File currentFile = new File(temporaryDirectory, entry.getName());
 
                 currentFile.createNewFile();
 
@@ -677,7 +671,7 @@ public class FileHelper {
         }
         IOUtils.closeQuietly(zipInputStream);
 
-        File[] shapefiles = FileUtils.listFiles(tempDir, (new String[]{"shp"}), false).toArray(new File[0]);
+        File[] shapefiles = FileUtils.listFiles(temporaryDirectory, (new String[]{"shp"}), false).toArray(new File[0]);
         if (shapefiles.length == 0 || shapefiles.length > 1) {
             return false;
         } else {
