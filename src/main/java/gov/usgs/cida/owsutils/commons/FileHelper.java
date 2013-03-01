@@ -7,6 +7,7 @@ import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,6 +21,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -464,6 +466,60 @@ public class FileHelper {
         return System.getProperty("java.io.tmpdir");
     }
 
+    public static void flattenZipFile(String zipFileLocation) throws IOException {
+        File zipFile = new File(zipFileLocation);
+        if (!zipFile.exists()) {
+            throw new IOException("File at location " + zipFileLocation + " does not exist");
+        }
+
+        if (zipFile.isDirectory()) {
+            throw new IOException("File at location " + zipFileLocation + " is a directory. File needs to be a zip file");
+        }
+
+        if (!zipFile.canRead() || !zipFile.canWrite()) {
+            throw new IOException("File at location " + zipFileLocation + " must be readable and writable");
+        }
+
+        File temporaryDirectory = new File(FileUtils.getTempDirectory(), UUID.randomUUID().toString() + "-deleteme");
+        try {
+            if (!temporaryDirectory.mkdirs()) {
+                throw new IOException("Could not create temporary directory (" + temporaryDirectory.getCanonicalPath() + ") for processing");
+            }
+
+            unzipFile(temporaryDirectory.getPath(), zipFile);
+            zipFile.delete();
+            zipFilesInDirectory(temporaryDirectory, zipFile);
+        } finally {
+            FileUtils.forceDelete(temporaryDirectory);
+        }
+    }
+
+    public static void zipFilesInDirectory(File sourceDirectory, File file) throws IOException {
+        if (!sourceDirectory.exists()) {
+            throw new IOException("Directory at location " + sourceDirectory.getPath() + " does not exist");
+        }
+
+        if (!sourceDirectory.isDirectory()) {
+            throw new IOException("Directory at location " + sourceDirectory.getPath() + " is not a directory.");
+        }
+
+        if (file.exists()) {
+            throw new IOException("File at location " + file.getPath() + " already exists.");
+        }
+
+        file.createNewFile();
+        FileOutputStream fos = new FileOutputStream(file);
+        ZipOutputStream zos = new ZipOutputStream(fos);
+        File[] fileList = sourceDirectory.listFiles();
+        for(File fileItem : fileList) {
+            ZipEntry zipEntry = new ZipEntry(fileItem.getName());
+            zos.putNextEntry(zipEntry);
+            IOUtils.copy(new FileReader(file), zos);
+            zos.closeEntry();
+        }
+        IOUtils.closeQuietly(zos);
+    }
+
     /**
      * Takes a zip file and unzips it to a outputDirectory
      *
@@ -481,24 +537,25 @@ public class FileHelper {
             zis = new ZipInputStream(new BufferedInputStream(fis));
             ZipEntry entry = null;
 
-
             final int BUFFER = 2048;
             while ((entry = zis.getNextEntry()) != null) {
                 String fileName = entry.getName();
                 int count;
                 byte data[] = new byte[BUFFER];
                 // Get the final filename (even if it's within directories in the ZIP file)
-                String destinationFileName = entry.getName().contains(File.pathSeparator) ? entry.getName().substring(entry.getName().lastIndexOf(File.pathSeparator)) : entry.getName();
-                String destinationPath = outputDirectory + java.io.File.separator + destinationFileName;
-                FileOutputStream fos = new FileOutputStream(destinationPath);
-                dest = new BufferedOutputStream(fos, BUFFER);
-                log.debug(new StringBuilder("Unzipping: ").append(fileName).append(" to ").append(destinationPath).toString());
-                while ((count = zis.read(data, 0, BUFFER)) != -1) {
-                    dest.write(data, 0, count);
+                if (!entry.isDirectory()) {
+                    String destinationFileName = entry.getName().contains(File.separator) ? entry.getName().substring(entry.getName().lastIndexOf(File.separator) + 1) : entry.getName();
+                    String destinationPath = outputDirectory + java.io.File.separator + destinationFileName;
+                    FileOutputStream fos = new FileOutputStream(destinationPath);
+                    dest = new BufferedOutputStream(fos, BUFFER);
+                    log.debug(new StringBuilder("Unzipping: ").append(fileName).append(" to ").append(destinationPath).toString());
+                    while ((count = zis.read(data, 0, BUFFER)) != -1) {
+                        dest.write(data, 0, count);
+                    }
+                    dest.flush();
+                    dest.close();
+                    log.trace(new StringBuilder("Unzipped: ").append(fileName).append(" to ").append(destinationPath).toString());
                 }
-                dest.flush();
-                dest.close();
-                log.trace(new StringBuilder("Unzipped: ").append(fileName).append(" to ").append(destinationPath).toString());
             }
         } finally {
             if (zis != null) {
@@ -634,48 +691,59 @@ public class FileHelper {
     }
 
     public static Boolean validateShapefileZip(final File shapeZip) throws IOException {
-        File temporaryDirectory = File.createTempFile(UUID.randomUUID().toString(), "deleteme", FileUtils.getTempDirectory());
-        temporaryDirectory.deleteOnExit();
+        File temporaryDirectory = new File(FileUtils.getTempDirectory(), UUID.randomUUID().toString() + "-deleteme");
+        try {
+            if (!temporaryDirectory.mkdirs()) {
+                throw new IOException("Could not create temporary directory (" + temporaryDirectory.getCanonicalPath() + ") for processing");
+            }
 
-        int bufferLength = 2048;
-        byte buffer[] = new byte[bufferLength];
+            int bufferLength = 2048;
+            byte buffer[] = new byte[bufferLength];
 
-        ZipInputStream zipInputStream = new ZipInputStream(new BufferedInputStream(new FileInputStream(shapeZip)));
-        ZipEntry entry;
-        while ((entry = zipInputStream.getNextEntry()) != null) {
-            String currentExtension = entry.getName();
-            // We want to skip past directories and metadata files (MACOSX ZIPPING FIX)
-            if (!currentExtension.endsWith(File.separator)
-                    && !currentExtension.startsWith(".")
-                    && !currentExtension.contains(File.separator + ".")) {
+            ZipInputStream zipInputStream = new ZipInputStream(new BufferedInputStream(new FileInputStream(shapeZip)));
+            ZipEntry entry;
+            while ((entry = zipInputStream.getNextEntry()) != null) {
+                String currentExtension = entry.getName();
+                // We want to skip past directories, hidden files and metadata files (MACOSX ZIPPING FIX)
+                if (!entry.isDirectory()
+                        && !currentExtension.startsWith(".")
+                        && !currentExtension.contains(File.separator + ".")) {
+                    File currentFile = new File(temporaryDirectory, currentExtension);
 
-                File currentFile = new File(temporaryDirectory, entry.getName());
-
-                currentFile.createNewFile();
-
-                FileOutputStream fos = new FileOutputStream(currentFile);
-                BufferedOutputStream bos = null;
-                try {
-                    bos = new BufferedOutputStream(fos, bufferLength);
-                    int cnt;
-                    while ((cnt = zipInputStream.read(buffer, 0, bufferLength)) != -1) {
-                        bos.write(buffer, 0, cnt);
-                    }
-                } finally {
-                    if (bos != null) {
-                        IOUtils.closeQuietly(bos);
+                    try {
+                        currentFile.createNewFile();
+                        FileOutputStream fos = new FileOutputStream(currentFile);
+                        BufferedOutputStream bos = null;
+                        try {
+                            bos = new BufferedOutputStream(fos, bufferLength);
+                            int cnt;
+                            while ((cnt = zipInputStream.read(buffer, 0, bufferLength)) != -1) {
+                                bos.write(buffer, 0, cnt);
+                            }
+                        } finally {
+                            if (bos != null) {
+                                IOUtils.closeQuietly(bos);
+                            }
+                        }
+                    } catch (IOException ioe) {
+                        // This usually occurs because this file is inside of another dir
+                        // so skip this file. Shapefiles inside with arbitrary directory 
+                        // depth should first be preprocessed to be single-depth since 
+                        // GS will not accept it otherwise
                     }
                 }
+                System.gc();
             }
-            System.gc();
-        }
-        IOUtils.closeQuietly(zipInputStream);
+            IOUtils.closeQuietly(zipInputStream);
 
-        File[] shapefiles = FileUtils.listFiles(temporaryDirectory, (new String[]{"shp"}), false).toArray(new File[0]);
-        if (shapefiles.length == 0 || shapefiles.length > 1) {
-            return false;
-        } else {
-            return validateShapeFile(shapefiles[0]);
+            File[] shapefiles = FileUtils.listFiles(temporaryDirectory, (new String[]{"shp"}), false).toArray(new File[0]);
+            if (shapefiles.length == 0 || shapefiles.length > 1) {
+                return false;
+            } else {
+                return validateShapeFile(shapefiles[0]);
+            }
+        } finally {
+            FileUtils.forceDelete(temporaryDirectory);
         }
     }
 }

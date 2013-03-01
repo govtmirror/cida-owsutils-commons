@@ -22,64 +22,88 @@ import org.junit.Ignore;
  * @author isuftin
  */
 public class FileHelperTest {
+
     private String sampleShapefileLocation = "gov/usgs/cida/owsutils/commons/sampleshapefiles/";
     private String validShapefileZipName = "valid_shapezip.zip";
     private String macZippedZipName = "valid_shapezip.zip";
+    private String zipWithSubfolderZipName = "zip_with_subfolder.zip";
     private File validShapefileZip = null;
     private File macZippedZip = null;
-    
-    private File multiDirZip = null;
+    private File zipWithSubfolder = null;
     private FileInputStream fis = null;
     private File tempArea = null;
-    
+
     public FileHelperTest() {
     }
-    
+
     @BeforeClass
     public static void setUpClass() {
     }
-    
+
     @AfterClass
     public static void tearDownClass() {
     }
-    
+
     @Before
-    public  void beforeTest() throws Exception {
+    public void beforeTest() throws Exception {
         tempArea = new File(System.getProperty("java.io.tmpdir") + File.separator + UUID.randomUUID().toString());
         FileUtils.forceMkdir(tempArea);
-        
+
         // Valid shapefile
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         URL url = cl.getResource(sampleShapefileLocation + validShapefileZipName);
         FileUtils.copyFileToDirectory(new File(url.toURI()), tempArea);
         validShapefileZip = new File(tempArea, validShapefileZipName);
-        
+
         // Valid shapefile
         cl = Thread.currentThread().getContextClassLoader();
         url = cl.getResource(sampleShapefileLocation + macZippedZipName);
         FileUtils.copyFileToDirectory(new File(url.toURI()), tempArea);
         macZippedZip = new File(tempArea, macZippedZipName);
-        
+
+        // Valid shapefile
+        cl = Thread.currentThread().getContextClassLoader();
+        url = cl.getResource(sampleShapefileLocation + zipWithSubfolderZipName);
+        FileUtils.copyFileToDirectory(new File(url.toURI()), tempArea);
+        zipWithSubfolder = new File(tempArea, zipWithSubfolderZipName);
+
     }
-    
+
     @After
-    public  void afterTest() throws Exception {
+    public void afterTest() throws Exception {
         IOUtils.closeQuietly(fis);
         FileUtils.forceDelete(tempArea);
     }
-    
-        /**
-     * Test of validateShapefileZip method, of class FileHelper.
-     */
+
     @Test
     public void testValidateValidShapefileZip() throws Exception {
         System.out.println("validateValidShapefileZip");
-        File shapeZip = null;
         Boolean expResult = true;
         Boolean result = FileHelper.validateShapefileZip(validShapefileZip);
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+    }
+
+    @Test
+    public void testValidateMacShapefileZip() throws Exception {
+        System.out.println("validateMacShapefileZip");
+        Boolean expResult = true;
+        Boolean result = FileHelper.validateShapefileZip(macZippedZip);
+        assertEquals(expResult, result);
+    }
+
+    @Test
+    public void testValidateZipWithSubfolderZip() throws Exception {
+        System.out.println("validateZipWithSubfolderZip");
+        Boolean expResult = false;
+        Boolean result = FileHelper.validateShapefileZip(zipWithSubfolder);
+        assertEquals(expResult, result);
+    }
+    
+    @Test
+    public void testFlattenZipWithSubfolderZip() throws Exception {
+        System.out.println("flattenZipWithSubfolderZip");
+        FileHelper.flattenZipFile(zipWithSubfolder.getPath());
+        assertEquals(zipWithSubfolder.exists(), true);
     }
 
     /**
@@ -516,5 +540,4 @@ public class FileHelperTest {
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
     }
-
 }
