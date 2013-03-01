@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 public class RequestResponseHelper {
 
     public static enum ResponseType {
+
         XML, JSON;
 
         @Override
@@ -40,7 +41,6 @@ public class RequestResponseHelper {
             }
         }
     }
-    
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(RequestResponseHelper.class);
 
     /**
@@ -136,7 +136,7 @@ public class RequestResponseHelper {
         String responseContent = new Gson().toJson(responseMap);
         sendResponse(response, ResponseType.JSON.toString(), responseContent, null);
     }
-    
+
     /**
      *
      * @param response
