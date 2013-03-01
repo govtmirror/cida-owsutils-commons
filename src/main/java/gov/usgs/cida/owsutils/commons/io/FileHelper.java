@@ -1,4 +1,4 @@
-package gov.usgs.cida.owsutils.commons;
+package gov.usgs.cida.owsutils.commons.io;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -184,7 +184,7 @@ public class FileHelper {
         return true;
     }
 
-    public static void saveFileFromRequest(InputStream is, File destinationFile) throws IOException {
+    public static void copyInputStreamToFile(InputStream is, File destinationFile) throws IOException {
         FileOutputStream os = null;
         try {
             os = new FileOutputStream(destinationFile);
@@ -535,7 +535,7 @@ public class FileHelper {
         BufferedOutputStream dest = null;
         try {
             zis = new ZipInputStream(new BufferedInputStream(fis));
-            ZipEntry entry = null;
+            ZipEntry entry;
 
             final int BUFFER = 2048;
             while ((entry = zis.getNextEntry()) != null) {
