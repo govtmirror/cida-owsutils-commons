@@ -147,6 +147,18 @@
             <version>1.0.0</version>
             <type>jar</type>
         </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-opengis</artifactId>
+            <version>8.5</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-referencing</artifactId>
+            <version>8.5</version>
+            <type>jar</type>
+        </dependency>
     </dependencies>
   
 </project>

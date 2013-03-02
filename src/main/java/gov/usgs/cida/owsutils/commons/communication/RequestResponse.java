@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author isuftin
  */
-public class RequestResponseHelper {
+public class RequestResponse {
 
     public static enum ResponseType {
 
@@ -41,7 +41,7 @@ public class RequestResponseHelper {
             }
         }
     }
-    private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(RequestResponseHelper.class);
+    private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(RequestResponse.class);
 
     /**
      * Takes a HttpServletRequest, parses it for a specific parameter that
@@ -75,37 +75,33 @@ public class RequestResponseHelper {
         }
     }
 
+    /**
+     * 
+     * @param response
+     * @param responseMap
+     * @param responseType Null value allowed. Will default to JSON
+     */
     public static void sendErrorResponse(HttpServletResponse response, Map<String, String> responseMap, ResponseType responseType) {
         responseMap.put("success", "false");
-        if (responseType == null) {
-            responseType = ResponseType.JSON;
-        }
-
-        switch (responseType) {
-            case XML: {
-                sendXMLResponse(response, responseMap);
-                break;
-            }
-            case JSON: {
-                sendJSONResponse(response, responseMap);
-            }
+        if (responseType == null || responseType == ResponseType.JSON) {
+            sendJSONResponse(response, responseMap);
+        } else {
+            sendXMLResponse(response, responseMap);
         }
     }
 
+    /**
+     * 
+     * @param response
+     * @param responseMap
+     * @param responseType Null value allowed. Will default to JSON
+     */
     public static void sendSuccessResponse(HttpServletResponse response, Map<String, String> responseMap, ResponseType responseType) {
         responseMap.put("success", "true");
-        if (responseType == null) {
-            responseType = ResponseType.JSON;
-        }
-
-        switch (responseType) {
-            case XML: {
-                sendXMLResponse(response, responseMap);
-                break;
-            }
-            case JSON: {
-                sendJSONResponse(response, responseMap);
-            }
+        if (responseType == null || responseType == ResponseType.JSON) {
+            sendJSONResponse(response, responseMap);
+        } else {
+            sendXMLResponse(response, responseMap);
         }
     }
 
