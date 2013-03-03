@@ -1,4 +1,4 @@
-package gov.usgs.cida.owsutils.commons;
+package gov.usgs.cida.owsutils.commons.io;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
  * @author isuftin
  *
  */
-public class FileHelper {
+public class FileHelper extends FileUtils {
 
     private static org.slf4j.Logger log = LoggerFactory.getLogger(FileHelper.class);
     private static final String SUFFIX_SHP = ".shp";
@@ -137,7 +137,7 @@ public class FileHelper {
     public static boolean renameFile(final File fromFile, final String toFileName) throws IOException {
         File toFile = new File(fromFile.getParent() + File.separator + toFileName);
 
-        FileUtils.copyFile(fromFile, toFile);
+        copyFile(fromFile, toFile);
 
         if (!toFile.exists()) {
             return false;
@@ -172,19 +172,19 @@ public class FileHelper {
      */
     public static boolean copyFileToPath(final File inFile, final String outPath, boolean deleteOriginalFile) throws IOException {
         if (inFile.isDirectory()) {
-            FileUtils.copyDirectory(inFile, (new File(outPath + File.separator + inFile.getName())));
+            copyDirectory(inFile, (new File(outPath + File.separator + inFile.getName())));
         } else {
-            FileUtils.copyFile(inFile, (new File(outPath + File.separator + inFile.getName())));
+            copyFile(inFile, (new File(outPath + File.separator + inFile.getName())));
         }
 
         if (deleteOriginalFile) {
-            FileUtils.deleteQuietly(inFile);
+            deleteQuietly(inFile);
         }
 
         return true;
     }
 
-    public static void saveFileFromRequest(InputStream is, File destinationFile) throws IOException {
+    public static void copyInputStreamToFile(InputStream is, File destinationFile) throws IOException {
         FileOutputStream os = null;
         try {
             os = new FileOutputStream(destinationFile);
@@ -271,7 +271,7 @@ public class FileHelper {
         if (!directory.exists()) {
             return false;
         }
-        FileUtils.deleteDirectory(directory);
+        deleteDirectory(directory);
         return true;
     }
 
@@ -298,7 +298,7 @@ public class FileHelper {
      * @return true if file has been deleted, false otherwise
      */
     public static boolean deleteFileQuietly(String filePath) {
-        return FileUtils.deleteQuietly(new File(filePath));
+        return deleteQuietly(new File(filePath));
     }
 
     /**
@@ -309,7 +309,7 @@ public class FileHelper {
      * @return true if file has been deleted, false otherwise
      */
     public static boolean deleteFileQuietly(File file) {
-        return FileUtils.deleteQuietly(file);
+        return deleteQuietly(file);
     }
 
     /**
@@ -323,7 +323,7 @@ public class FileHelper {
         if ("".equals(filePath)) {
             return false;
         }
-        return FileHelper.deleteFile(new File(filePath));
+        return deleteFile(new File(filePath));
     }
 
     /**
@@ -363,7 +363,7 @@ public class FileHelper {
             return null;
         }
         File result = null;
-        Collection<File> fileCollection = FileUtils.listFiles(new File(rootPath), new String[]{file.substring(file.lastIndexOf('.') + 1)}, true);
+        Collection<File> fileCollection = listFiles(new File(rootPath), new String[]{file.substring(file.lastIndexOf('.') + 1)}, true);
         if (fileCollection.isEmpty()) {
             return result;
         }
@@ -407,7 +407,7 @@ public class FileHelper {
             return null;
         }
         List<String> result = new ArrayList<String>();
-        Collection<File> fileList = FileUtils.listFiles((new File(filePath)), extensions, recursive);
+        Collection<File> fileList = listFiles((new File(filePath)), extensions, recursive);
 
         for (File file : fileList) {
             result.add(file.getName());
@@ -428,7 +428,7 @@ public class FileHelper {
      * given
      */
     public static Collection<File> getFileCollection(String filePath, boolean recursive) throws IllegalArgumentException {
-        return (Collection<File>) FileHelper.getFileCollection(filePath, null, recursive);
+        return (Collection<File>) getFileCollection(filePath, null, recursive);
     }
 
     /**
@@ -449,7 +449,7 @@ public class FileHelper {
         }
 
         Collection<File> result = null;
-        Object interimResult = FileUtils.listFiles((new File(filePath)), extensions, recursive);
+        Object interimResult = listFiles((new File(filePath)), extensions, recursive);
         if (interimResult instanceof Collection<?>) {
             result = (Collection<File>) interimResult;
         }
@@ -480,7 +480,7 @@ public class FileHelper {
             throw new IOException("File at location " + zipFileLocation + " must be readable and writable");
         }
 
-        File temporaryDirectory = new File(FileUtils.getTempDirectory(), UUID.randomUUID().toString() + "-deleteme");
+        File temporaryDirectory = new File(getTempDirectory(), UUID.randomUUID().toString() + "-deleteme");
         try {
             if (!temporaryDirectory.mkdirs()) {
                 throw new IOException("Could not create temporary directory (" + temporaryDirectory.getCanonicalPath() + ") for processing");
@@ -490,7 +490,7 @@ public class FileHelper {
             zipFile.delete();
             zipFilesInDirectory(temporaryDirectory, zipFile);
         } finally {
-            FileUtils.forceDelete(temporaryDirectory);
+            forceDelete(temporaryDirectory);
         }
     }
 
@@ -511,10 +511,10 @@ public class FileHelper {
         FileOutputStream fos = new FileOutputStream(file);
         ZipOutputStream zos = new ZipOutputStream(fos);
         File[] fileList = sourceDirectory.listFiles();
-        for(File fileItem : fileList) {
+        for (File fileItem : fileList) {
             ZipEntry zipEntry = new ZipEntry(fileItem.getName());
             zos.putNextEntry(zipEntry);
-            IOUtils.copy(new FileReader(file), zos);
+            IOUtils.copy(new FileReader(fileItem), zos);
             zos.closeEntry();
         }
         IOUtils.closeQuietly(zos);
@@ -532,38 +532,20 @@ public class FileHelper {
     public static boolean unzipFile(String outputDirectory, File zipFile) throws FileNotFoundException, IOException {
         FileInputStream fis = new FileInputStream(zipFile);
         ZipInputStream zis = null;
-        BufferedOutputStream dest = null;
         try {
             zis = new ZipInputStream(new BufferedInputStream(fis));
-            ZipEntry entry = null;
-
-            final int BUFFER = 2048;
+            ZipEntry entry;
             while ((entry = zis.getNextEntry()) != null) {
-                String fileName = entry.getName();
-                int count;
-                byte data[] = new byte[BUFFER];
                 // Get the final filename (even if it's within directories in the ZIP file)
                 if (!entry.isDirectory()) {
                     String destinationFileName = entry.getName().contains(File.separator) ? entry.getName().substring(entry.getName().lastIndexOf(File.separator) + 1) : entry.getName();
                     String destinationPath = outputDirectory + java.io.File.separator + destinationFileName;
                     FileOutputStream fos = new FileOutputStream(destinationPath);
-                    dest = new BufferedOutputStream(fos, BUFFER);
-                    log.debug(new StringBuilder("Unzipping: ").append(fileName).append(" to ").append(destinationPath).toString());
-                    while ((count = zis.read(data, 0, BUFFER)) != -1) {
-                        dest.write(data, 0, count);
-                    }
-                    dest.flush();
-                    dest.close();
-                    log.trace(new StringBuilder("Unzipped: ").append(fileName).append(" to ").append(destinationPath).toString());
+                    IOUtils.copy(zis, fos);
                 }
             }
         } finally {
-            if (zis != null) {
-                IOUtils.closeQuietly(zis);
-            }
-            if (dest != null) {
-                IOUtils.closeQuietly(dest);
-            }
+            IOUtils.closeQuietly(zis);
         }
         return true;
     }
@@ -609,14 +591,14 @@ public class FileHelper {
         }
 
         if (recursive) {
-            Iterator<File> files = FileUtils.iterateFiles(new File(path), null, true);
+            Iterator<File> files = iterateFiles(new File(path), null, true);
             while (files.hasNext()) {
                 File file = files.next();
-                FileUtils.touch(file); // update date on file
+                touch(file); // update date on file
                 log.debug(new StringBuilder("Updated timestamp on file: ").append(file.getPath()).toString());
             }
         } else {
-            FileUtils.touch(new File(path));
+            touch(new File(path));
             log.debug(new StringBuilder("Updated timestamp on file: ").append(new File(path).getPath()).toString());
         }
         return true;
@@ -638,9 +620,9 @@ public class FileHelper {
         Iterator<File> files;
 
         if (recursive.booleanValue()) {
-            files = FileUtils.iterateFiles(filePath, TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE);
+            files = iterateFiles(filePath, TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE);
         } else {
-            files = FileUtils.iterateFiles(filePath, TrueFileFilter.INSTANCE, null);
+            files = iterateFiles(filePath, TrueFileFilter.INSTANCE, null);
         }
 
         Collection<File> result = new ArrayList<File>();
@@ -678,10 +660,10 @@ public class FileHelper {
         }
 
         // Ensure we only have one shapefile inside this zip
-        int shpCount = FileUtils.listFiles(shapefileDir, (new String[]{"shp"}), false).size();
-        int shxCount = FileUtils.listFiles(shapefileDir, (new String[]{"shx"}), false).size();
-        int prjCount = FileUtils.listFiles(shapefileDir, (new String[]{"prj"}), false).size();
-        int dbfCount = FileUtils.listFiles(shapefileDir, (new String[]{"dbf"}), false).size();
+        int shpCount = listFiles(shapefileDir, (new String[]{"shp"}), false).size();
+        int shxCount = listFiles(shapefileDir, (new String[]{"shx"}), false).size();
+        int prjCount = listFiles(shapefileDir, (new String[]{"prj"}), false).size();
+        int dbfCount = listFiles(shapefileDir, (new String[]{"dbf"}), false).size();
 
         if (shpCount + shxCount + prjCount + dbfCount > 4) {
             return false;
@@ -691,7 +673,7 @@ public class FileHelper {
     }
 
     public static Boolean validateShapefileZip(final File shapeZip) throws IOException {
-        File temporaryDirectory = new File(FileUtils.getTempDirectory(), UUID.randomUUID().toString() + "-deleteme");
+        File temporaryDirectory = new File(getTempDirectory(), UUID.randomUUID().toString() + "-deleteme");
         try {
             if (!temporaryDirectory.mkdirs()) {
                 throw new IOException("Could not create temporary directory (" + temporaryDirectory.getCanonicalPath() + ") for processing");
@@ -710,40 +692,38 @@ public class FileHelper {
                         && !currentExtension.contains(File.separator + ".")) {
                     File currentFile = new File(temporaryDirectory, currentExtension);
 
+                    FileOutputStream fos = null;
                     try {
                         currentFile.createNewFile();
-                        FileOutputStream fos = new FileOutputStream(currentFile);
-                        BufferedOutputStream bos = null;
-                        try {
-                            bos = new BufferedOutputStream(fos, bufferLength);
-                            int cnt;
-                            while ((cnt = zipInputStream.read(buffer, 0, bufferLength)) != -1) {
-                                bos.write(buffer, 0, cnt);
-                            }
-                        } finally {
-                            if (bos != null) {
-                                IOUtils.closeQuietly(bos);
-                            }
-                        }
+                        fos = new FileOutputStream(currentFile);
+                        IOUtils.copy(zipInputStream, fos);
                     } catch (IOException ioe) {
                         // This usually occurs because this file is inside of another dir
                         // so skip this file. Shapefiles inside with arbitrary directory 
                         // depth should first be preprocessed to be single-depth since 
                         // GS will not accept it otherwise
+                    } finally {
+                        IOUtils.closeQuietly(fos);
                     }
                 }
                 System.gc();
             }
             IOUtils.closeQuietly(zipInputStream);
 
-            File[] shapefiles = FileUtils.listFiles(temporaryDirectory, (new String[]{"shp"}), false).toArray(new File[0]);
+            File[] shapefiles = listFiles(temporaryDirectory, (new String[]{"shp"}), false).toArray(new File[0]);
             if (shapefiles.length == 0 || shapefiles.length > 1) {
                 return false;
             } else {
                 return validateShapeFile(shapefiles[0]);
             }
         } finally {
-            FileUtils.forceDelete(temporaryDirectory);
+            forceDelete(temporaryDirectory);
         }
+    }
+
+    public static File createTemporaryDirectory() throws IOException {
+        File temporaryDirectory = new File(getTempDirectory(), UUID.randomUUID().toString() + "-deleteme");
+        forceMkdir(temporaryDirectory);
+        return temporaryDirectory;
     }
 }

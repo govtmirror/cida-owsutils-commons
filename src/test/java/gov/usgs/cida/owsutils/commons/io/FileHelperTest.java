@@ -1,5 +1,6 @@
-package gov.usgs.cida.owsutils.commons;
+package gov.usgs.cida.owsutils.commons.io;
 
+import gov.usgs.cida.owsutils.commons.io.FileHelper;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -98,12 +99,49 @@ public class FileHelperTest {
         Boolean result = FileHelper.validateShapefileZip(zipWithSubfolder);
         assertEquals(expResult, result);
     }
-    
+
     @Test
     public void testFlattenZipWithSubfolderZip() throws Exception {
         System.out.println("flattenZipWithSubfolderZip");
         FileHelper.flattenZipFile(zipWithSubfolder.getPath());
         assertEquals(zipWithSubfolder.exists(), true);
+    }
+
+    @Test
+    public void testFlattenAndVerifyZipWithSubfolderZip() throws Exception {
+        System.out.println("flattenAndVerifyZipWithSubfolderZip");
+        Boolean expResult = false;
+
+        // At first this file has folders within the zip, which do not validate
+        Boolean result = FileHelper.validateShapefileZip(zipWithSubfolder);
+        assertEquals(result, expResult);
+
+        expResult = true;
+
+        // Flatten the zip file so all files come up to the root 
+        FileHelper.flattenZipFile(zipWithSubfolder.getPath());
+        assertEquals(zipWithSubfolder.exists(), expResult);
+
+        // The shapefile should now be valid
+        result = FileHelper.validateShapefileZip(zipWithSubfolder);
+        assertEquals(expResult, result);
+    }
+    
+    @Test
+    public void testFlattenAndVerifyValidZip() throws Exception {
+        System.out.println("flattenAndVerifyZipWithSubfolderZip");
+        Boolean expResult = true;
+
+        Boolean result = FileHelper.validateShapefileZip(validShapefileZip);
+        assertEquals(result, expResult);
+
+        // Flatten the zip file so all files come up to the root 
+        FileHelper.flattenZipFile(validShapefileZip.getPath());
+        assertEquals(validShapefileZip.exists(), expResult);
+
+        // The shapefile should now be valid
+        result = FileHelper.validateShapefileZip(validShapefileZip);
+        assertEquals(expResult, result);
     }
 
     /**
@@ -201,7 +239,7 @@ public class FileHelperTest {
     }
 
     /**
-     * Test of saveFileFromRequest method, of class FileHelper.
+     * Test of copyInputStreamToFile method, of class FileHelper.
      */
     @Test
     @Ignore
@@ -209,7 +247,7 @@ public class FileHelperTest {
         System.out.println("saveFileFromRequest");
         InputStream is = null;
         File destinationFile = null;
-        FileHelper.saveFileFromRequest(is, destinationFile);
+        FileHelper.copyInputStreamToFile(is, destinationFile);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
     }
