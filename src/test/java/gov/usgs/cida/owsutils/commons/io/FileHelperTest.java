@@ -126,6 +126,23 @@ public class FileHelperTest {
         result = FileHelper.validateShapefileZip(zipWithSubfolder);
         assertEquals(expResult, result);
     }
+    
+    @Test
+    public void testFlattenAndVerifyValidZip() throws Exception {
+        System.out.println("flattenAndVerifyZipWithSubfolderZip");
+        Boolean expResult = true;
+
+        Boolean result = FileHelper.validateShapefileZip(validShapefileZip);
+        assertEquals(result, expResult);
+
+        // Flatten the zip file so all files come up to the root 
+        FileHelper.flattenZipFile(validShapefileZip.getPath());
+        assertEquals(validShapefileZip.exists(), expResult);
+
+        // The shapefile should now be valid
+        result = FileHelper.validateShapefileZip(validShapefileZip);
+        assertEquals(expResult, result);
+    }
 
     /**
      * Test of base64Encode method, of class FileHelper.

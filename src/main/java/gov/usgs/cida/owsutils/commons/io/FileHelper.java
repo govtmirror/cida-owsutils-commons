@@ -514,7 +514,7 @@ public class FileHelper extends FileUtils {
         for (File fileItem : fileList) {
             ZipEntry zipEntry = new ZipEntry(fileItem.getName());
             zos.putNextEntry(zipEntry);
-            IOUtils.copy(new FileReader(file), zos);
+            IOUtils.copy(new FileReader(fileItem), zos);
             zos.closeEntry();
         }
         IOUtils.closeQuietly(zos);
