@@ -13,6 +13,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.Ignore;
 
 /**
  *
@@ -29,6 +30,7 @@ public class ProjectionUtilsTest {
     private String epsg5070ZipName = "epsg_5070.zip";
     private String noProjDefault4326ZipName = "no_proj_default_to_epsg_4326.zip";
     private String multiShpZipName = "multiple_shapefiles.zip";
+    private String NJShpZipName = "NJ_baseline_w_orient.zip";
     private File validShapefileZip = null;
     private File macZippedZip = null;
     private File epsg26917Zip = null;
@@ -37,6 +39,7 @@ public class ProjectionUtilsTest {
     private File noProjDefault4326Zip = null;
     private File zipWithSubfolderZip = null;
     private File multiShpZipNameZip = null;
+    private File NJShpZipNameZip = null;
     private FileInputStream fis = null;
     private File tempArea = null;
 
@@ -89,6 +92,10 @@ public class ProjectionUtilsTest {
         FileUtils.copyFileToDirectory(new File(url.toURI()), tempArea);
         multiShpZipNameZip = new File(tempArea, multiShpZipName);
 
+        url = cl.getResource(sampleShapefileLocation + NJShpZipName);
+        FileUtils.copyFileToDirectory(new File(url.toURI()), tempArea);
+        NJShpZipNameZip = new File(tempArea, NJShpZipName);
+
     }
 
     @After
@@ -140,7 +147,7 @@ public class ProjectionUtilsTest {
         try {
             result = ProjectionUtils.getProjectionFromShapefileZip(shapefile, true);
             assertFalse(result.isEmpty());
-            assertEquals(result, "CRS:84");
+            assertEquals("EPSG:4326", result);
         } catch (Exception ex) {
             fail("Test reached unexpected exception. " + ex.getMessage());
         }
@@ -161,7 +168,7 @@ public class ProjectionUtilsTest {
         try {
             result = ProjectionUtils.getProjectionFromShapefileZip(shapefile, true);
             assertFalse(result.isEmpty());
-            assertEquals(result, "CRS:84");
+            assertEquals("EPSG:4326", result);
         } catch (Exception ex) {
             fail("Test reached unexpected exception. " + ex.getMessage());
         }
@@ -181,7 +188,7 @@ public class ProjectionUtilsTest {
         String result;
         try {
             result = ProjectionUtils.getProjectionFromShapefileZip(shapefile, true);
-            fail("This test should have hit an exception");
+            assertEquals("EPSG:26917", result);
         } catch (Exception ex) {
             assertEquals(ex.getMessage(), "Could not find EPSG code for prj definition. Please ensure proper projection and a valid PRJ file.");
         }
@@ -202,7 +209,7 @@ public class ProjectionUtilsTest {
         try {
             result = ProjectionUtils.getProjectionFromShapefileZip(shapefile, true);
             assertFalse(result.isEmpty());
-            assertEquals(result, "CRS:84");
+            assertEquals("EPSG:4326", result);
         } catch (Exception ex) {
             assertEquals(ex.getMessage(), "Could not find EPSG code for prj definition. Please ensure proper projection and a valid PRJ file.");
         }
@@ -214,7 +221,7 @@ public class ProjectionUtilsTest {
         File shapefile = epsg5070Zip;
         FileHelper.flattenZipFile(shapefile.getPath());
         String projectionFromShapefileZip = ProjectionUtils.getProjectionFromShapefileZip(shapefile, false);
-        assertEquals(projectionFromShapefileZip, "EPSG:42303");
+        assertEquals(projectionFromShapefileZip, "EPSG:5070");
     }
 
     @Test
@@ -233,7 +240,7 @@ public class ProjectionUtilsTest {
         try {
             result = ProjectionUtils.getProjectionFromShapefileZip(shapefile, true);
             assertFalse(result.isEmpty());
-            assertEquals(result, "CRS:84");
+            assertEquals("EPSG:4326", result);
         } catch (Exception ex) {
             fail(ex.getMessage());
         }
@@ -249,5 +256,19 @@ public class ProjectionUtilsTest {
         } catch (Exception ex) {
             assertTrue(ex.getMessage().equals("Error while getting EPSG information from PRJ file. Function halted."));
         }
+    }
+
+    @Test
+    public void testGetProjectionFromNJZip() throws Exception {
+        System.out.println("getProjectionFromNJZip");
+        File shapefile = NJShpZipNameZip;
+        FileHelper.flattenZipFile(shapefile.getPath());
+        try {
+        String result = ProjectionUtils.getProjectionFromShapefileZip(shapefile, true);
+        assertFalse(result.isEmpty());
+        } catch(Exception ex) {
+            fail(ex.getMessage());
+        }
+        
     }
 }
