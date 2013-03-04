@@ -155,13 +155,13 @@
         <dependency>
             <groupId>org.geotools</groupId>
             <artifactId>gt-opengis</artifactId>
-            <version>8.5</version>
+            <version>8.6</version>
             <type>jar</type>
         </dependency>
         <dependency>
             <groupId>org.geotools</groupId>
             <artifactId>gt-referencing</artifactId>
-            <version>8.5</version>
+            <version>8.6</version>
             <type>jar</type>
         </dependency>
     </dependencies>

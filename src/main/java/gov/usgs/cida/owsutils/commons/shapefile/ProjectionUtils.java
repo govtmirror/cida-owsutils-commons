@@ -4,10 +4,10 @@ import gov.usgs.cida.owsutils.commons.io.FileHelper;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import static org.apache.commons.io.FileUtils.getTempDirectory;
+import org.apache.commons.lang.StringUtils;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.operation.projection.ProjectionException;
 import org.opengis.referencing.FactoryException;
@@ -49,6 +49,9 @@ public class ProjectionUtils {
                 if (useBaseCRSFailover) {
                     LOG.debug("Could not find EPSG code for prj definition. The geographic coordinate system '" + declaredCRS + "' will be used");
                     declaredCRS = getDeclaredEPSGFromWKT(prjString, true);
+                    if (StringUtils.isBlank(declaredCRS)) {
+                        throw new ProjectionException("Could not find EPSG code for prj definition. Please ensure proper projection and a valid PRJ file.");
+                    }
                 } else {
                     throw new ProjectionException("Could not find EPSG code for prj definition. Please ensure proper projection and a valid PRJ file.");
                 }

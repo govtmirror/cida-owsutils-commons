@@ -1,13 +1,12 @@
 package gov.usgs.cida.owsutils.commons.shapefile;
 
+import gov.usgs.cida.owsutils.commons.io.FileHelper;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.net.URL;
 import java.util.UUID;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.geotools.referencing.operation.projection.ProjectionException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -15,7 +14,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Ignore;
-import org.opengis.referencing.FactoryException;
 
 /**
  *
@@ -27,9 +25,19 @@ public class ProjectionUtilsTest {
     private String validShapefileZipName = "valid_shapezip.zip";
     private String macZippedZipName = "valid_shapezip.zip";
     private String zipWithSubfolderZipName = "zip_with_subfolder.zip";
+    private String epsg26917ZipName = "epsg_26917.zip";
+    private String epsg4326ZipName = "epsg_4326.zip";
+    private String epsg5070ZipName = "epsg_5070.zip";
+    private String noProjDefault4326ZipName = "no_proj_default_to_epsg_4326.zip";
+    private String multiShpZipName = "multiple_shapefiles.zip";
     private File validShapefileZip = null;
     private File macZippedZip = null;
-    private File zipWithSubfolder = null;
+    private File epsg26917Zip = null;
+    private File epsg4326Zip = null;
+    private File epsg5070Zip = null;
+    private File noProjDefault4326Zip = null;
+    private File zipWithSubfolderZip = null;
+    private File multiShpZipNameZip = null;
     private FileInputStream fis = null;
     private File tempArea = null;
 
@@ -49,23 +57,38 @@ public class ProjectionUtilsTest {
         tempArea = new File(System.getProperty("java.io.tmpdir") + File.separator + UUID.randomUUID().toString());
         FileUtils.forceMkdir(tempArea);
 
-        // Valid shapefile
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         URL url = cl.getResource(sampleShapefileLocation + validShapefileZipName);
         FileUtils.copyFileToDirectory(new File(url.toURI()), tempArea);
         validShapefileZip = new File(tempArea, validShapefileZipName);
 
-        // Valid shapefile
-        cl = Thread.currentThread().getContextClassLoader();
         url = cl.getResource(sampleShapefileLocation + macZippedZipName);
         FileUtils.copyFileToDirectory(new File(url.toURI()), tempArea);
         macZippedZip = new File(tempArea, macZippedZipName);
 
-        // Valid shapefile
-        cl = Thread.currentThread().getContextClassLoader();
         url = cl.getResource(sampleShapefileLocation + zipWithSubfolderZipName);
         FileUtils.copyFileToDirectory(new File(url.toURI()), tempArea);
-        zipWithSubfolder = new File(tempArea, zipWithSubfolderZipName);
+        zipWithSubfolderZip = new File(tempArea, zipWithSubfolderZipName);
+
+        url = cl.getResource(sampleShapefileLocation + epsg26917ZipName);
+        FileUtils.copyFileToDirectory(new File(url.toURI()), tempArea);
+        epsg26917Zip = new File(tempArea, epsg26917ZipName);
+        
+        url = cl.getResource(sampleShapefileLocation + epsg4326ZipName);
+        FileUtils.copyFileToDirectory(new File(url.toURI()), tempArea);
+        epsg4326Zip = new File(tempArea, epsg4326ZipName);
+        
+        url = cl.getResource(sampleShapefileLocation + epsg5070ZipName);
+        FileUtils.copyFileToDirectory(new File(url.toURI()), tempArea);
+        epsg5070Zip = new File(tempArea, epsg5070ZipName);
+        
+        url = cl.getResource(sampleShapefileLocation + noProjDefault4326ZipName);
+        FileUtils.copyFileToDirectory(new File(url.toURI()), tempArea);
+        noProjDefault4326Zip = new File(tempArea, noProjDefault4326ZipName);
+        
+        url = cl.getResource(sampleShapefileLocation + multiShpZipName);
+        FileUtils.copyFileToDirectory(new File(url.toURI()), tempArea);
+        multiShpZipNameZip = new File(tempArea, multiShpZipName);
 
     }
 
@@ -75,20 +98,6 @@ public class ProjectionUtilsTest {
         FileUtils.forceDelete(tempArea);
     }
 
-    /**
-     * Test of getProjectionFromShapefile method, of class ProjectionUtils.
-     */
-//    @Test
-//    @Ignore
-//    public void testGetProjection() {
-//        System.out.println("getProjectionFromShapefile");
-//        File shapefile = null;
-//        String expResult = "";
-//        String result = ProjectionUtils.getProjectionFromShapefile(shapefile);
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
     /**
      * Test of getPRJByteArrayFromShapefileZip method, of class ProjectionUtils.
      *
@@ -113,7 +122,7 @@ public class ProjectionUtilsTest {
     @Test
     public void testGetPRJByteArrayFromMultidirShapefileZip() throws Exception {
         System.out.println("getPRJByteArrayFromMultidirShapefileZip");
-        File shapefile = zipWithSubfolder;
+        File shapefile = zipWithSubfolderZip;
         byte[] result = ProjectionUtils.getPRJByteArrayFromShapefileZip(shapefile);
         assertNotEquals(result.length, 0);
     }
@@ -124,18 +133,134 @@ public class ProjectionUtilsTest {
         File shapefile = validShapefileZip;
         try {
             ProjectionUtils.getProjectionFromShapefileZip(shapefile, false);
-        } catch (Exception ex)  {
+        } catch (Exception ex) {
             assertTrue(ex.getMessage().equals("Could not find EPSG code for prj definition. Please ensure proper projection and a valid PRJ file."));
         }
-        
+
         String result;
         try {
             result = ProjectionUtils.getProjectionFromShapefileZip(shapefile, true);
             assertFalse(result.isEmpty());
-        } catch (Exception ex)  {
+            assertEquals(result, "CRS:84");
+        } catch (Exception ex) {
             fail("Test reached unexpected exception. " + ex.getMessage());
         }
-        
+    }
+
+    @Test
+    public void testGetProjectionFromMultiDirhapefile() throws Exception {
+        System.out.println("getProjectionFromMultiDirhapefile");
+        File shapefile = zipWithSubfolderZip;
+        FileHelper.flattenZipFile(shapefile.getPath());
+        try {
+            ProjectionUtils.getProjectionFromShapefileZip(shapefile, false);
+        } catch (Exception ex) {
+            assertTrue(ex.getMessage().equals("Could not find EPSG code for prj definition. Please ensure proper projection and a valid PRJ file."));
+        }
+
+        String result;
+        try {
+            result = ProjectionUtils.getProjectionFromShapefileZip(shapefile, true);
+            assertFalse(result.isEmpty());
+            assertEquals(result, "CRS:84");
+        } catch (Exception ex) {
+            fail("Test reached unexpected exception. " + ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testGetProjectionFromEPSG26917Zip() throws Exception {
+        System.out.println("getProjectionFromEPSG26917Zip");
+        File shapefile = epsg26917Zip;
+        FileHelper.flattenZipFile(shapefile.getPath());
+        try {
+            ProjectionUtils.getProjectionFromShapefileZip(shapefile, false);
+        } catch (Exception ex) {
+            assertTrue(ex.getMessage().equals("Could not find EPSG code for prj definition. Please ensure proper projection and a valid PRJ file."));
+        }
+
+        String result;
+        try {
+            result = ProjectionUtils.getProjectionFromShapefileZip(shapefile, true);
+            fail("This test should have hit an exception");
+        } catch (Exception ex) {
+            assertEquals(ex.getMessage(), "Could not find EPSG code for prj definition. Please ensure proper projection and a valid PRJ file.");
+        }
+    }
+    
+    @Test
+    public void testGetProjectionFromEPSG4326Zip() throws Exception {
+        System.out.println("getProjectionFromEPSG4326Zip");
+        File shapefile = epsg4326Zip;
+        FileHelper.flattenZipFile(shapefile.getPath());
+        try {
+            ProjectionUtils.getProjectionFromShapefileZip(shapefile, false);
+        } catch (Exception ex) {
+            assertTrue(ex.getMessage().equals("Could not find EPSG code for prj definition. Please ensure proper projection and a valid PRJ file."));
+        }
+
+        String result;
+        try {
+            result = ProjectionUtils.getProjectionFromShapefileZip(shapefile, true);
+            assertFalse(result.isEmpty());
+            assertEquals(result, "CRS:84");
+        } catch (Exception ex) {
+            assertEquals(ex.getMessage(), "Could not find EPSG code for prj definition. Please ensure proper projection and a valid PRJ file.");
+        }
+    }
+    
+    @Test
+    public void testGetProjectionFromEPSG5070Zip() throws Exception {
+        System.out.println("getProjectionFromEPSG5070Zip");
+        File shapefile = epsg5070Zip;
+        FileHelper.flattenZipFile(shapefile.getPath());
+        try {
+            ProjectionUtils.getProjectionFromShapefileZip(shapefile, false);
+        } catch (Exception ex) {
+            assertTrue(ex.getMessage().equals("Could not find EPSG code for prj definition. Please ensure proper projection and a valid PRJ file."));
+        }
+
+        String result;
+        try {
+            result = ProjectionUtils.getProjectionFromShapefileZip(shapefile, true);
+            assertFalse(result.isEmpty());
+            assertEquals(result, "CRS:84");
+        } catch (Exception ex) {
+            assertEquals(ex.getMessage(), "Could not find EPSG code for prj definition. Please ensure proper projection and a valid PRJ file.");
+        }
+    }
+    
+    @Test
+    public void testGetProjectionFromnoProjDefault4326Zip() throws Exception {
+        System.out.println("getProjectionFromnoProjDefault4326Zip");
+        File shapefile = noProjDefault4326Zip;
+        FileHelper.flattenZipFile(shapefile.getPath());
+        try {
+            ProjectionUtils.getProjectionFromShapefileZip(shapefile, false);
+        } catch (Exception ex) {
+            assertTrue(ex.getMessage().equals("Could not find EPSG code for prj definition. Please ensure proper projection and a valid PRJ file."));
+        }
+
+        String result;
+        try {
+            result = ProjectionUtils.getProjectionFromShapefileZip(shapefile, true);
+            assertFalse(result.isEmpty());
+            assertEquals(result, "CRS:84");
+        } catch (Exception ex) {
+            fail(ex.getMessage());
+        }
+    }
+    
+    @Test
+    public void testGetProjectionFromMultiShpZipNameZip() throws Exception {
+        System.out.println("getProjectionFromMultiShpZipNameZip");
+        File shapefile = multiShpZipNameZip;
+        FileHelper.flattenZipFile(shapefile.getPath());
+        try {
+            ProjectionUtils.getProjectionFromShapefileZip(shapefile, false);
+        } catch (Exception ex) {
+            assertTrue(ex.getMessage().equals("Error while getting EPSG information from PRJ file. Function halted."));
+        }
     }
 
     /**
