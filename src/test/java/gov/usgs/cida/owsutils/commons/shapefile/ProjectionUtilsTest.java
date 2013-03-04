@@ -13,7 +13,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.junit.Ignore;
 
 /**
  *
@@ -73,19 +72,19 @@ public class ProjectionUtilsTest {
         url = cl.getResource(sampleShapefileLocation + epsg26917ZipName);
         FileUtils.copyFileToDirectory(new File(url.toURI()), tempArea);
         epsg26917Zip = new File(tempArea, epsg26917ZipName);
-        
+
         url = cl.getResource(sampleShapefileLocation + epsg4326ZipName);
         FileUtils.copyFileToDirectory(new File(url.toURI()), tempArea);
         epsg4326Zip = new File(tempArea, epsg4326ZipName);
-        
+
         url = cl.getResource(sampleShapefileLocation + epsg5070ZipName);
         FileUtils.copyFileToDirectory(new File(url.toURI()), tempArea);
         epsg5070Zip = new File(tempArea, epsg5070ZipName);
-        
+
         url = cl.getResource(sampleShapefileLocation + noProjDefault4326ZipName);
         FileUtils.copyFileToDirectory(new File(url.toURI()), tempArea);
         noProjDefault4326Zip = new File(tempArea, noProjDefault4326ZipName);
-        
+
         url = cl.getResource(sampleShapefileLocation + multiShpZipName);
         FileUtils.copyFileToDirectory(new File(url.toURI()), tempArea);
         multiShpZipNameZip = new File(tempArea, multiShpZipName);
@@ -187,7 +186,7 @@ public class ProjectionUtilsTest {
             assertEquals(ex.getMessage(), "Could not find EPSG code for prj definition. Please ensure proper projection and a valid PRJ file.");
         }
     }
-    
+
     @Test
     public void testGetProjectionFromEPSG4326Zip() throws Exception {
         System.out.println("getProjectionFromEPSG4326Zip");
@@ -208,35 +207,24 @@ public class ProjectionUtilsTest {
             assertEquals(ex.getMessage(), "Could not find EPSG code for prj definition. Please ensure proper projection and a valid PRJ file.");
         }
     }
-    
+
     @Test
     public void testGetProjectionFromEPSG5070Zip() throws Exception {
         System.out.println("getProjectionFromEPSG5070Zip");
         File shapefile = epsg5070Zip;
         FileHelper.flattenZipFile(shapefile.getPath());
-        try {
-            ProjectionUtils.getProjectionFromShapefileZip(shapefile, false);
-        } catch (Exception ex) {
-            assertTrue(ex.getMessage().equals("Could not find EPSG code for prj definition. Please ensure proper projection and a valid PRJ file."));
-        }
-
-        String result;
-        try {
-            result = ProjectionUtils.getProjectionFromShapefileZip(shapefile, true);
-            assertFalse(result.isEmpty());
-            assertEquals(result, "CRS:84");
-        } catch (Exception ex) {
-            assertEquals(ex.getMessage(), "Could not find EPSG code for prj definition. Please ensure proper projection and a valid PRJ file.");
-        }
+        String projectionFromShapefileZip = ProjectionUtils.getProjectionFromShapefileZip(shapefile, false);
+        assertEquals(projectionFromShapefileZip, "EPSG:42303");
     }
-    
+
     @Test
     public void testGetProjectionFromnoProjDefault4326Zip() throws Exception {
         System.out.println("getProjectionFromnoProjDefault4326Zip");
         File shapefile = noProjDefault4326Zip;
         FileHelper.flattenZipFile(shapefile.getPath());
         try {
-            ProjectionUtils.getProjectionFromShapefileZip(shapefile, false);
+            String projectionFromShapefileZip = ProjectionUtils.getProjectionFromShapefileZip(shapefile, false);
+            assertEquals(projectionFromShapefileZip, "CRS:84");
         } catch (Exception ex) {
             assertTrue(ex.getMessage().equals("Could not find EPSG code for prj definition. Please ensure proper projection and a valid PRJ file."));
         }
@@ -250,7 +238,7 @@ public class ProjectionUtilsTest {
             fail(ex.getMessage());
         }
     }
-    
+
     @Test
     public void testGetProjectionFromMultiShpZipNameZip() throws Exception {
         System.out.println("getProjectionFromMultiShpZipNameZip");

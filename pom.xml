@@ -160,9 +160,8 @@
         </dependency>
         <dependency>
             <groupId>org.geotools</groupId>
-            <artifactId>gt-referencing</artifactId>
-            <version>8.6</version>
-            <type>jar</type>
+            <artifactId>gt-epsg-extension</artifactId>
+            <version>8.2</version>
         </dependency>
     </dependencies>
   
