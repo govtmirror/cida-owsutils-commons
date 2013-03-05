@@ -110,11 +110,10 @@ public class RequestResponse {
 
         try {
             XMLBuilder root = XMLBuilder.create("Response");
-            root.element("success").text(responseMap.get("success"));
 
             String[] keySetArray = responseMap.keySet().toArray(new String[0]);
             for (String key : keySetArray) {
-                root.element("success").text(responseMap.get(key));
+                root.element(key).text(responseMap.get(key));
             }
             responseContent = root.asString();
         } catch (ParserConfigurationException ex) {
