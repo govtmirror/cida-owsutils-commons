@@ -110,7 +110,6 @@ public class RequestResponse {
 
         try {
             XMLBuilder root = XMLBuilder.create("Response");
-            root.element("success").text(responseMap.get("success"));
 
             String[] keySetArray = responseMap.keySet().toArray(new String[0]);
             for (String key : keySetArray) {
