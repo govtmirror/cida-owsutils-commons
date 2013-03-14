@@ -510,14 +510,17 @@ public class FileHelper extends FileUtils {
         file.createNewFile();
         FileOutputStream fos = new FileOutputStream(file);
         ZipOutputStream zos = new ZipOutputStream(fos);
-        File[] fileList = sourceDirectory.listFiles();
-        for (File fileItem : fileList) {
-            ZipEntry zipEntry = new ZipEntry(fileItem.getName());
-            zos.putNextEntry(zipEntry);
-            IOUtils.copy(new FileReader(fileItem), zos);
-            zos.closeEntry();
+        try {
+            File[] fileList = sourceDirectory.listFiles();
+            for (File fileItem : fileList) {
+                ZipEntry zipEntry = new ZipEntry(fileItem.getName());
+                zos.putNextEntry(zipEntry);
+                IOUtils.copy(new FileInputStream(fileItem), zos);
+                zos.closeEntry();
+            }
+        } finally {
+            IOUtils.closeQuietly(zos);
         }
-        IOUtils.closeQuietly(zos);
     }
 
     /**
@@ -533,7 +536,7 @@ public class FileHelper extends FileUtils {
         FileInputStream fis = new FileInputStream(zipFile);
         ZipInputStream zis = null;
         try {
-            zis = new ZipInputStream(new BufferedInputStream(fis));
+            zis = new ZipInputStream(fis);
             ZipEntry entry;
             while ((entry = zis.getNextEntry()) != null) {
                 // Get the final filename (even if it's within directories in the ZIP file)
