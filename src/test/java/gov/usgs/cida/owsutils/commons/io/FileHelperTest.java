@@ -3,6 +3,7 @@ package gov.usgs.cida.owsutils.commons.io;
 import gov.usgs.cida.owsutils.commons.io.FileHelper;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Collection;
@@ -79,25 +80,22 @@ public class FileHelperTest {
     @Test
     public void testValidateValidShapefileZip() throws Exception {
         System.out.println("validateValidShapefileZip");
-        Boolean expResult = true;
-        Boolean result = FileHelper.validateShapefileZip(validShapefileZip);
-        assertEquals(expResult, result);
+        FileHelper.validateShapefileZip(validShapefileZip);
+        assertTrue(true);
     }
 
     @Test
     public void testValidateMacShapefileZip() throws Exception {
         System.out.println("validateMacShapefileZip");
-        Boolean expResult = true;
-        Boolean result = FileHelper.validateShapefileZip(macZippedZip);
-        assertEquals(expResult, result);
+        FileHelper.validateShapefileZip(macZippedZip);
+        assertTrue(true);
     }
 
     @Test
     public void testValidateZipWithSubfolderZip() throws Exception {
         System.out.println("validateZipWithSubfolderZip");
-        Boolean expResult = false;
-        Boolean result = FileHelper.validateShapefileZip(zipWithSubfolder);
-        assertEquals(expResult, result);
+        FileHelper.validateShapefileZip(zipWithSubfolder);
+        assertTrue(true);
     }
 
     @Test
@@ -113,35 +111,36 @@ public class FileHelperTest {
         Boolean expResult = false;
 
         // At first this file has folders within the zip, which do not validate
-        Boolean result = FileHelper.validateShapefileZip(zipWithSubfolder);
-        assertEquals(result, expResult);
-
-        expResult = true;
+        try {
+            FileHelper.validateShapefileZip(zipWithSubfolder);
+        } catch (IOException ioe) {
+            assertNotNull(ioe);
+        }
 
         // Flatten the zip file so all files come up to the root 
         FileHelper.flattenZipFile(zipWithSubfolder.getPath());
         assertEquals(zipWithSubfolder.exists(), expResult);
 
         // The shapefile should now be valid
-        result = FileHelper.validateShapefileZip(zipWithSubfolder);
-        assertEquals(expResult, result);
+        FileHelper.validateShapefileZip(zipWithSubfolder);
+        assertTrue(true);
     }
-    
+
     @Test
     public void testFlattenAndVerifyValidZip() throws Exception {
         System.out.println("flattenAndVerifyZipWithSubfolderZip");
         Boolean expResult = true;
 
-        Boolean result = FileHelper.validateShapefileZip(validShapefileZip);
-        assertEquals(result, expResult);
+        FileHelper.validateShapefileZip(validShapefileZip);
+        assertTrue(true);
 
         // Flatten the zip file so all files come up to the root 
         FileHelper.flattenZipFile(validShapefileZip.getPath());
         assertEquals(validShapefileZip.exists(), expResult);
 
         // The shapefile should now be valid
-        result = FileHelper.validateShapefileZip(validShapefileZip);
-        assertEquals(expResult, result);
+        FileHelper.validateShapefileZip(validShapefileZip);
+        assertTrue(true);
     }
 
     /**
