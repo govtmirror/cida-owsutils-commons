@@ -94,6 +94,7 @@ public class FileHelperTest {
     @Test
     public void testValidateZipWithSubfolderZip() throws Exception {
         System.out.println("validateZipWithSubfolderZip");
+		FileHelper.flattenZipFile(zipWithSubfolder.getPath());
         FileHelper.validateShapefileZip(zipWithSubfolder);
         assertTrue(true);
     }
@@ -119,7 +120,7 @@ public class FileHelperTest {
 
         // Flatten the zip file so all files come up to the root 
         FileHelper.flattenZipFile(zipWithSubfolder.getPath());
-        assertEquals(zipWithSubfolder.exists(), expResult);
+        assertEquals(zipWithSubfolder.exists(), true);
 
         // The shapefile should now be valid
         FileHelper.validateShapefileZip(zipWithSubfolder);
@@ -131,8 +132,11 @@ public class FileHelperTest {
         System.out.println("flattenAndVerifyZipWithSubfolderZip");
         Boolean expResult = true;
 
-        FileHelper.validateShapefileZip(validShapefileZip);
-        assertTrue(true);
+        try {
+            FileHelper.validateShapefileZip(zipWithSubfolder);
+        } catch (IOException ioe) {
+            assertNotNull(ioe);
+        }
 
         // Flatten the zip file so all files come up to the root 
         FileHelper.flattenZipFile(validShapefileZip.getPath());
