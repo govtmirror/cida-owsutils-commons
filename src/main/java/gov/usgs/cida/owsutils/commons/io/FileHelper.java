@@ -675,15 +675,12 @@ public class FileHelper extends FileUtils {
         return true;
     }
 
-    public static Boolean validateShapefileZip(final File shapeZip) throws IOException {
+    public static void validateShapefileZip(final File shapeZip) throws IOException {
         File temporaryDirectory = new File(getTempDirectory(), UUID.randomUUID().toString() + "-deleteme");
         try {
             if (!temporaryDirectory.mkdirs()) {
                 throw new IOException("Could not create temporary directory (" + temporaryDirectory.getCanonicalPath() + ") for processing");
             }
-
-            int bufferLength = 2048;
-            byte buffer[] = new byte[bufferLength];
 
             ZipInputStream zipInputStream = new ZipInputStream(new BufferedInputStream(new FileInputStream(shapeZip)));
             ZipEntry entry;
@@ -715,9 +712,9 @@ public class FileHelper extends FileUtils {
 
             File[] shapefiles = listFiles(temporaryDirectory, (new String[]{"shp"}), false).toArray(new File[0]);
             if (shapefiles.length == 0 || shapefiles.length > 1) {
-                return false;
+                throw new IOException("Shapefile archive may only contain one shapefile");
             } else {
-                return validateShapeFile(shapefiles[0]);
+                validateShapeFile(shapefiles[0]);
             }
         } finally {
             forceDelete(temporaryDirectory);
