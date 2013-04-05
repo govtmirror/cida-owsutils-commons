@@ -27,6 +27,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.filefilter.RegexFileFilter;
 import org.apache.commons.io.filefilter.TrueFileFilter;
+import org.apache.commons.lang.CharSet;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -487,7 +488,7 @@ public class FileHelper extends FileUtils {
             }
 
             unzipFile(temporaryDirectory.getPath(), zipFile);
-            zipFile.delete();
+            FileUtils.deleteQuietly(zipFile);
             zipFilesInDirectory(temporaryDirectory, zipFile);
         } finally {
             forceDelete(temporaryDirectory);
@@ -507,7 +508,6 @@ public class FileHelper extends FileUtils {
             throw new IOException("File at location " + file.getPath() + " already exists.");
         }
 
-        file.createNewFile();
         FileOutputStream fos = new FileOutputStream(file);
         ZipOutputStream zos = new ZipOutputStream(fos);
         try {
@@ -540,7 +540,7 @@ public class FileHelper extends FileUtils {
             ZipEntry entry;
             while ((entry = zis.getNextEntry()) != null) {
                 // Get the final filename (even if it's within directories in the ZIP file)
-                if (!entry.isDirectory()) {
+                if (!entry.isDirectory() && !entry.getName().startsWith(".") && !entry.getName().contains(File.separator + ".") && !entry.getName().toLowerCase().contains("macosx")) {
                     String destinationFileName = entry.getName().contains(File.separator) ? entry.getName().substring(entry.getName().lastIndexOf(File.separator) + 1) : entry.getName();
                     String destinationPath = outputDirectory + java.io.File.separator + destinationFileName;
                     FileOutputStream fos = new FileOutputStream(destinationPath);
