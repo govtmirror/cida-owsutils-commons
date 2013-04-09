@@ -711,10 +711,12 @@ public class FileHelper extends FileUtils {
             IOUtils.closeQuietly(zipInputStream);
 
             File[] shapefiles = listFiles(temporaryDirectory, (new String[]{"shp"}), false).toArray(new File[0]);
-            if (shapefiles.length == 0 || shapefiles.length > 1) {
+            if (shapefiles.length == 0) {
+                throw new IOException("Shapefile archive needs to contain at least one shapefile");
+            } else if (shapefiles.length > 1) {
                 throw new IOException("Shapefile archive may only contain one shapefile");
-            } else {
-                validateShapeFile(shapefiles[0]);
+            } else if (!validateShapeFile(shapefiles[0])){
+                throw new IOException("Shapefile archive is not valid");
             }
         } finally {
             forceDelete(temporaryDirectory);
