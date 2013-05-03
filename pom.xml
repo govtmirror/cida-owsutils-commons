@@ -166,7 +166,7 @@
         <dependency>
             <groupId>org.geotools</groupId>
             <artifactId>gt-epsg-extension</artifactId>
-            <version>8.2</version>
+            <version>8.6</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
