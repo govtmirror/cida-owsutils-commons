@@ -44,18 +44,18 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 	
-    <distributionManagement>
-        <repository>
-            <id>cida-releases</id>
-            <name>CIDA Releases</name>
-            <url>http://internal.cida.usgs.gov/maven/content/repositories/cida-releases/</url>
-        </repository>
-        <snapshotRepository>
-            <id>cida-snapshots</id>
-            <name>CIDA Snapshots</name>
-            <url>http://internal.cida.usgs.gov/maven/content/repositories/cida-snapshots/</url>
-        </snapshotRepository>
-    </distributionManagement>
+	<distributionManagement>
+		<repository>
+			<id>cida-public-releases</id>
+			<name>CIDA Public Releases</name>
+			<url>http://internal.cida.usgs.gov/maven/content/repositories/cida-public-releases/</url>
+		</repository>
+		<snapshotRepository>
+			<id>cida-public-snapshots</id>
+			<name>CIDA Public Snapshots</name>
+			<url>http://internal.cida.usgs.gov/maven/content/repositories/cida-public-snapshots/</url>
+		</snapshotRepository>
+	</distributionManagement>
     
     <scm>
         <connection>scm:git:http://github.com/USGS-CIDA/cida-owsutils-commons.git</connection>
@@ -66,13 +66,13 @@
     
     <url>http://cida.usgs.gov/</url>
     
-    <repositories>
-        <repository>
-            <id>nexus</id>
-            <name>CIDA Nexus</name>
-            <url>http://internal.cida.usgs.gov/maven/content/groups/public/</url>
-        </repository>
-    </repositories>
+	<repositories>
+		<repository>
+			<id>cida-public</id>
+			<name>CIDA Public Nexus</name>
+			<url>http://cida.usgs.gov/maven/cida-public/</url>
+		</repository>
+	</repositories>
     
     <dependencies>
         <!-- SERVLET CONTAINER -->
