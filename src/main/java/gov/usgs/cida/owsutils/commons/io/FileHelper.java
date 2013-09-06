@@ -662,13 +662,12 @@ public class FileHelper extends FileUtils {
             }
         }
 
-        // Ensure we only have one shapefile inside this zip
+        // Ensure we only have one shapefile inside this zip (extra project specific dbf files are allowed)
         int shpCount = listFiles(shapefileDir, (new String[]{"shp"}), false).size();
         int shxCount = listFiles(shapefileDir, (new String[]{"shx"}), false).size();
         int prjCount = listFiles(shapefileDir, (new String[]{"prj"}), false).size();
-        int dbfCount = listFiles(shapefileDir, (new String[]{"dbf"}), false).size();
 
-        if (shpCount + shxCount + prjCount + dbfCount > 4) {
+        if (shpCount + shxCount + prjCount > 3) {
             return false;
         }
 

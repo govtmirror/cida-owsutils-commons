@@ -27,9 +27,11 @@ public class FileHelperTest {
 
     private String sampleShapefileLocation = "gov/usgs/cida/owsutils/commons/sampleshapefiles/";
     private String validShapefileZipName = "valid_shapezip.zip";
+	private String validShapefileZip2dbfName = "valid_shapezip_w_2dbf.zip";
     private String macZippedZipName = "valid_shapezip.zip";
     private String zipWithSubfolderZipName = "zip_with_subfolder.zip";
     private File validShapefileZip = null;
+	private File validShapefileZip2dbf = null;
     private File macZippedZip = null;
     private File zipWithSubfolder = null;
     private FileInputStream fis = null;
@@ -57,6 +59,12 @@ public class FileHelperTest {
         FileUtils.copyFileToDirectory(new File(url.toURI()), tempArea);
         validShapefileZip = new File(tempArea, validShapefileZipName);
 
+		// Valid shapefile w/ 2 dbf files
+        cl = Thread.currentThread().getContextClassLoader();
+        url = cl.getResource(sampleShapefileLocation + validShapefileZip2dbfName);
+        FileUtils.copyFileToDirectory(new File(url.toURI()), tempArea);
+        validShapefileZip2dbf = new File(tempArea, validShapefileZip2dbfName);
+		
         // Valid shapefile
         cl = Thread.currentThread().getContextClassLoader();
         url = cl.getResource(sampleShapefileLocation + macZippedZipName);
@@ -81,6 +89,21 @@ public class FileHelperTest {
     public void testValidateValidShapefileZip() throws Exception {
         System.out.println("validateValidShapefileZip");
         FileHelper.validateShapefileZip(validShapefileZip);
+        assertTrue(true);
+    }
+	
+	/**
+	 * Multiple dbf files are allowed b/c this is a common way++ for projects to
+	 * stuff a bit more custom data into a shapefile package.
+	 * 
+	 * ++OK, The Coastal Hazards project does this, but others may as well.
+	 * 
+	 * @throws Exception 
+	 */
+    @Test
+    public void testValidateValidShapefileZipWithTwoDbfFiles() throws Exception {
+        System.out.println("validShapefileZip2dbf");
+        FileHelper.validateShapefileZip(validShapefileZip2dbf);
         assertTrue(true);
     }
 
