@@ -516,7 +516,7 @@ public class FileHelper extends FileUtils {
                 ZipEntry zipEntry = new ZipEntry(fileItem.getName());
                 zos.putNextEntry(zipEntry);
                 FileInputStream fis = new FileInputStream(fileItem);
-                IOUtils.copy(fis, zos);
+                IOUtils.copyLarge(fis, zos);
                 zos.closeEntry();
                 IOUtils.closeQuietly(fis);
             }
@@ -548,7 +548,7 @@ public class FileHelper extends FileUtils {
                     String destinationFileName = entry.getName().contains(File.separator) ? entry.getName().substring(entry.getName().lastIndexOf(File.separator) + 1) : entry.getName();
                     String destinationPath = outputDirectory + java.io.File.separator + destinationFileName;
                     fos = new FileOutputStream(destinationPath);
-                    IOUtils.copy(zis, fos);
+                    IOUtils.copyLarge(zis, fos);
                     IOUtils.closeQuietly(fos);
                 }
             }
