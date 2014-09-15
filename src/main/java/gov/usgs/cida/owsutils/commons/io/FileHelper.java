@@ -515,11 +515,14 @@ public class FileHelper extends FileUtils {
             for (File fileItem : fileList) {
                 ZipEntry zipEntry = new ZipEntry(fileItem.getName());
                 zos.putNextEntry(zipEntry);
-                IOUtils.copy(new FileInputStream(fileItem), zos);
+                FileInputStream fis = new FileInputStream(fileItem);
+                IOUtils.copyLarge(fis, zos);
                 zos.closeEntry();
+                IOUtils.closeQuietly(fis);
             }
         } finally {
             IOUtils.closeQuietly(zos);
+            IOUtils.closeQuietly(fos);
         }
     }
 
@@ -535,6 +538,7 @@ public class FileHelper extends FileUtils {
     public static boolean unzipFile(String outputDirectory, File zipFile) throws FileNotFoundException, IOException {
         FileInputStream fis = new FileInputStream(zipFile);
         ZipInputStream zis = null;
+        FileOutputStream fos = null;
         try {
             zis = new ZipInputStream(fis);
             ZipEntry entry;
@@ -543,12 +547,14 @@ public class FileHelper extends FileUtils {
                 if (!entry.isDirectory() && !entry.getName().startsWith(".") && !entry.getName().contains(File.separator + ".") && !entry.getName().toLowerCase().contains("macosx")) {
                     String destinationFileName = entry.getName().contains(File.separator) ? entry.getName().substring(entry.getName().lastIndexOf(File.separator) + 1) : entry.getName();
                     String destinationPath = outputDirectory + java.io.File.separator + destinationFileName;
-                    FileOutputStream fos = new FileOutputStream(destinationPath);
-                    IOUtils.copy(zis, fos);
+                    fos = new FileOutputStream(destinationPath);
+                    IOUtils.copyLarge(zis, fos);
+                    IOUtils.closeQuietly(fos);
                 }
             }
         } finally {
             IOUtils.closeQuietly(zis);
+            IOUtils.closeQuietly(fos);
         }
         return true;
     }
