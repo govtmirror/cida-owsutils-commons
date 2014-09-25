@@ -50,6 +50,7 @@ public class RequestResponse {
      * @param request
      * @param destinationFile
      * @param fileParam
+	 * @param overwrite
      * @throws FileUploadException
      * @throws IOException
      */
@@ -116,11 +117,7 @@ public class RequestResponse {
                 root.element(key).text(responseMap.get(key));
             }
             responseContent = root.asString();
-        } catch (ParserConfigurationException ex) {
-            LOG.error("Could not send response XML.", ex);
-        } catch (FactoryConfigurationError ex) {
-            LOG.error("Could not send response XML.", ex);
-        } catch (TransformerException ex) {
+        } catch (ParserConfigurationException | FactoryConfigurationError | TransformerException ex) {
             LOG.error("Could not send response XML.", ex);
         }
 

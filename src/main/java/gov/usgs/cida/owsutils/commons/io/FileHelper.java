@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -186,12 +187,8 @@ public class FileHelper extends FileUtils {
     }
 
     public static void copyInputStreamToFile(InputStream is, File destinationFile) throws IOException {
-        FileOutputStream os = null;
-        try {
-            os = new FileOutputStream(destinationFile);
-            IOUtils.copy(is, os);
-        } finally {
-            IOUtils.closeQuietly(os);
+        try (FileOutputStream os = new FileOutputStream(destinationFile)){
+            IOUtils.copyLarge(is, os);
         }
     }
 
@@ -544,7 +541,7 @@ public class FileHelper extends FileUtils {
             ZipEntry entry;
             while ((entry = zis.getNextEntry()) != null) {
                 // Get the final filename (even if it's within directories in the ZIP file)
-                if (!entry.isDirectory() && !entry.getName().startsWith(".") && !entry.getName().contains(File.separator + ".") && !entry.getName().toLowerCase().contains("macosx")) {
+                if (!entry.isDirectory() && !entry.getName().startsWith(".") && !entry.getName().contains(File.separator + ".") && !entry.getName().toLowerCase(Locale.getDefault()).contains("macosx")) {
                     String destinationFileName = entry.getName().contains(File.separator) ? entry.getName().substring(entry.getName().lastIndexOf(File.separator) + 1) : entry.getName();
                     String destinationPath = outputDirectory + java.io.File.separator + destinationFileName;
                     fos = new FileOutputStream(destinationPath);

@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import org.apache.commons.io.FileUtils;
@@ -268,14 +269,14 @@ public class FileHelperTest {
      * Test of copyInputStreamToFile method, of class FileHelper.
      */
     @Test
-    @Ignore
-    public void testSaveFileFromRequest() throws Exception {
-        System.out.println("saveFileFromRequest");
-        InputStream is = null;
-        File destinationFile = null;
+    public void copyInputStreamToFileNoOverwrite() throws Exception {
+        System.out.println("copyInputStreamToFile");
+        InputStream is = new FileInputStream(validShapefileZip);
+        File destinationFile = File.createTempFile("deleteme", String.valueOf(new Date().getTime()));
+		destinationFile.deleteOnExit();
         FileHelper.copyInputStreamToFile(is, destinationFile);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        assertTrue(destinationFile.exists());
+		assertTrue(destinationFile.length() == validShapefileZip.length());
     }
 
     /**
