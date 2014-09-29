@@ -7,7 +7,6 @@ import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.Iterator;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.geotools.data.shapefile.ShpFiles;
 import org.geotools.data.shapefile.dbf.DbaseFileHeader;
 import org.junit.After;
@@ -28,9 +27,6 @@ public class IterableShapefileReaderTest {
 	private static File workDir;
 	private static File NJBaseline;
 
-	public IterableShapefileReaderTest() {
-	}
-
 	@BeforeClass
 	public static void setUpClass() throws IOException {
 		workDir = new File(tempDir, String.valueOf(new Date().getTime()));
@@ -41,6 +37,9 @@ public class IterableShapefileReaderTest {
 	@AfterClass
 	public static void tearDownClass() {
 		FileUtils.deleteQuietly(workDir);
+	}
+
+	public IterableShapefileReaderTest() {
 	}
 
 	@Before
