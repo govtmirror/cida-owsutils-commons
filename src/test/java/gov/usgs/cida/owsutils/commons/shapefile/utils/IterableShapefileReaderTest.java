@@ -5,17 +5,16 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Date;
-import java.util.Iterator;
 import org.apache.commons.io.FileUtils;
-import org.geotools.data.shapefile.ShpFiles;
 import org.geotools.data.shapefile.dbf.DbaseFileHeader;
 import org.junit.After;
 import org.junit.AfterClass;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
-import org.junit.Ignore;
 
 /**
  *
@@ -97,69 +96,4 @@ public class IterableShapefileReaderTest {
 			// meh
 		}
 	}
-
-	@Test
-	@Ignore
-	public void testGetDbfHeader() {
-		System.out.println("getDbfHeader");
-		IterableShapefileReader instance = null;
-		DbaseFileHeader expResult = null;
-		DbaseFileHeader result = instance.getDbfHeader();
-		assertEquals(expResult, result);
-		fail("The test case is a prototype.");
-	}
-
-	@Test
-	@Ignore
-	public void testGetShpFiles() {
-		System.out.println("getShpFiles");
-		IterableShapefileReader instance = null;
-		ShpFiles expResult = null;
-		ShpFiles result = instance.getShpFiles();
-		assertEquals(expResult, result);
-		fail("The test case is a prototype.");
-	}
-
-	@Test
-	@Ignore
-	public void testIterator() {
-		System.out.println("iterator");
-		IterableShapefileReader instance = null;
-		Iterator<ShapeAndAttributes> expResult = null;
-		Iterator<ShapeAndAttributes> result = instance.iterator();
-		assertEquals(expResult, result);
-		fail("The test case is a prototype.");
-	}
-
-	@Test
-	@Ignore
-	public void testHasNext() {
-		System.out.println("hasNext");
-		IterableShapefileReader instance = null;
-		boolean expResult = false;
-		boolean result = instance.hasNext();
-		assertEquals(expResult, result);
-		fail("The test case is a prototype.");
-	}
-
-	@Test
-	@Ignore
-	public void testNext() {
-		System.out.println("next");
-		IterableShapefileReader instance = null;
-		ShapeAndAttributes expResult = null;
-		ShapeAndAttributes result = instance.next();
-		assertEquals(expResult, result);
-		fail("The test case is a prototype.");
-	}
-
-	@Test
-	@Ignore
-	public void testRemove() {
-		System.out.println("remove");
-		IterableShapefileReader instance = null;
-		instance.remove();
-		fail("The test case is a prototype.");
-	}
-
 }
