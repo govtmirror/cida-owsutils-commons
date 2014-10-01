@@ -86,7 +86,7 @@ public class RequestResponse {
 	public static void sendErrorResponse(HttpServletResponse response, Map<String, String> responseMap, ResponseType responseType) {
 		responseMap.put("success", "false");
 
-		if (responseMap.containsKey("serverCode")) {
+		if (!responseMap.containsKey("serverCode")) {
 			responseMap.put("serverCode", "500");
 		}
 
