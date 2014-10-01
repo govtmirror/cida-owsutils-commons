@@ -6,6 +6,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.apache.commons.io.IOUtils;
 import org.geotools.data.shapefile.dbf.DbaseFileHeader;
 import org.geotools.data.shapefile.dbf.DbaseFileReader;
 import org.geotools.data.shapefile.files.ShpFiles;
@@ -105,7 +108,6 @@ public class IterableShapefileReader implements Iterable<ShapeAndAttributes>, It
 
 	@Override
 	public void close() throws Exception {
-		dbf.close();
-		rdr.close();
+		shpFile.dispose();
 	}
 }
