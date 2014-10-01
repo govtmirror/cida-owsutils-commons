@@ -698,7 +698,7 @@ public class FileHelper extends FileUtils {
 						fos = new FileOutputStream(currentFile);
 						IOUtils.copy(zipInputStream, fos);
 					} catch (IOException ioe) {
-                        // This usually occurs because this file is inside of another dir
+						// This usually occurs because this file is inside of another dir
 						// so skip this file. Shapefiles inside with arbitrary directory 
 						// depth should first be preprocessed to be single-depth since 
 						// GS will not accept it otherwise
@@ -729,7 +729,7 @@ public class FileHelper extends FileUtils {
 		return temporaryDirectory;
 	}
 
-	public static IterableShapefileReader loadShapefileIntoReader(File shapefileDirectory) throws IOException {
+	public static IterableShapefileReader loadShapefileFromDirectoryIntoReader(File shapefileDirectory) throws IOException {
 		IterableShapefileReader reader = null;
 		Collection<File> shapefiles = FileUtils.listFiles(shapefileDirectory, new String[]{"shp"}, false);
 		if (shapefiles.isEmpty()) {

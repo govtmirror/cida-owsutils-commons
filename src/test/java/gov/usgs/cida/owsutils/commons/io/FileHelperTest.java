@@ -176,7 +176,7 @@ public class FileHelperTest {
 		FileHelper.unzipFile(tempLoc.getAbsolutePath(), validShapefileZip);
 
 		try {
-			IterableShapefileReader reader = FileHelper.loadShapefileIntoReader(tempLoc);
+			IterableShapefileReader reader = FileHelper.loadShapefileFromDirectoryIntoReader(tempLoc);
 			assertNotNull(reader);
 			assertTrue(reader.iterator().hasNext());
 			
