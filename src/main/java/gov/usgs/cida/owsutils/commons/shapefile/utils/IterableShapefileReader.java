@@ -20,7 +20,7 @@ import org.geotools.data.shapefile.shp.ShapefileReader.Record;
  * @author rhayes
  *
  */
-public class IterableShapefileReader implements Iterable<ShapeAndAttributes>, Iterator<ShapeAndAttributes> {
+public class IterableShapefileReader implements Iterable<ShapeAndAttributes>, Iterator<ShapeAndAttributes>, AutoCloseable {
 
 	private ShapefileReader rdr;
 	private DbaseFileReader dbf;
@@ -101,5 +101,11 @@ public class IterableShapefileReader implements Iterable<ShapeAndAttributes>, It
 	@Override
 	public void remove() {
 		throw new UnsupportedOperationException("Nope, sorry");
+	}
+
+	@Override
+	public void close() throws Exception {
+		dbf.close();
+		rdr.close();
 	}
 }
