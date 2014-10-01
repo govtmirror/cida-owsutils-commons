@@ -8,6 +8,7 @@ import java.net.URL;
 import java.util.Date;
 import java.util.Iterator;
 import org.apache.commons.io.FileUtils;
+import org.geotools.data.crs.ReprojectFeatureReader;
 import org.geotools.data.crs.ReprojectFeatureResults;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.referencing.CRS;
@@ -88,19 +89,29 @@ public class FeatureCollectionFromShpTest {
 		assertEquals(CRS.toSRS(results.getOrigin().getSchema().getGeometryDescriptor().getCoordinateReferenceSystem()), "EPSG:3857");
 		assertEquals(CRS.toSRS(results.getSchema().getCoordinateReferenceSystem()), "CRS:84");
 
-		Iterator<SimpleFeature> iter = results.iterator();
-		SimpleFeature sf = iter.next();
-		assertEquals(sf.getFeatureType().getType("DATE_").getBinding(), java.lang.String.class);
 		
-		String dateString = (String) sf.getAttribute("DATE_");
+		SimpleFeature originalSf = coll.features().next();
+		assertEquals(originalSf.getDefaultGeometryProperty().getBounds().getMaxX(), -1.756861581602166E7d, 0);
+		assertEquals(originalSf.getDefaultGeometryProperty().getBounds().getMaxX(), originalSf.getDefaultGeometryProperty().getBounds().getMinX(), 0);
+		assertEquals(originalSf.getDefaultGeometryProperty().getBounds().getMaxY(), 2423192.79378892d, 0);
+		assertEquals(originalSf.getDefaultGeometryProperty().getBounds().getMaxY(), originalSf.getDefaultGeometryProperty().getBounds().getMinY(), 0);
+		
+		Iterator<SimpleFeature> iter = results.iterator();
+		SimpleFeature reprojectedSf = iter.next();
+		assertEquals(reprojectedSf.getFeatureType().getType("DATE_").getBinding(), java.lang.String.class);
+		
+		String dateString = (String) reprojectedSf.getAttribute("DATE_");
 		assertEquals(dateString, "01/01/1927");
-		results.closeIterator(iter);
+		
+		assertEquals(reprojectedSf.getFeatureType().getAttributeDescriptors().get(0).getLocalName(), "the_geom");
 		
 		// Because this is a point shapefile, the minX/maxX and minY/maxY should be the same
-		assertEquals(sf.getDefaultGeometryProperty().getBounds().getMaxX(), -157.82156108356213d, 0);
-		assertEquals(sf.getDefaultGeometryProperty().getBounds().getMaxX(), sf.getDefaultGeometryProperty().getBounds().getMinX(), 0);
-		assertEquals(sf.getDefaultGeometryProperty().getBounds().getMaxY(), 21.26238463921301, 0);
-		assertEquals(sf.getDefaultGeometryProperty().getBounds().getMaxY(), sf.getDefaultGeometryProperty().getBounds().getMinY(), 0);
+		assertEquals(reprojectedSf.getDefaultGeometryProperty().getBounds().getMaxX(), -157.82156108356213d, 0);
+		assertEquals(reprojectedSf.getDefaultGeometryProperty().getBounds().getMaxX(), reprojectedSf.getDefaultGeometryProperty().getBounds().getMinX(), 0);
+		assertEquals(reprojectedSf.getDefaultGeometryProperty().getBounds().getMaxY(), 21.26238463921301, 0);
+		assertEquals(reprojectedSf.getDefaultGeometryProperty().getBounds().getMaxY(), reprojectedSf.getDefaultGeometryProperty().getBounds().getMinY(), 0);
+		
+		results.closeIterator(iter);
 		
 		try {
 			FileUtils.deleteDirectory(tmpDir);
