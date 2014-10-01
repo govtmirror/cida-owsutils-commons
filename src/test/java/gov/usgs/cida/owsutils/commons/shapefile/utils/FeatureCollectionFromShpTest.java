@@ -96,6 +96,12 @@ public class FeatureCollectionFromShpTest {
 		assertEquals(dateString, "01/01/1927");
 		results.closeIterator(iter);
 		
+		// Because this is a point shapefile, the minX/maxX and minY/maxY should be the same
+		assertEquals(sf.getDefaultGeometryProperty().getBounds().getMaxX(), -157.82156108356213d, 0);
+		assertEquals(sf.getDefaultGeometryProperty().getBounds().getMaxX(), sf.getDefaultGeometryProperty().getBounds().getMinX(), 0);
+		assertEquals(sf.getDefaultGeometryProperty().getBounds().getMaxY(), 21.26238463921301, 0);
+		assertEquals(sf.getDefaultGeometryProperty().getBounds().getMaxY(), sf.getDefaultGeometryProperty().getBounds().getMinY(), 0);
+		
 		try {
 			FileUtils.deleteDirectory(tmpDir);
 		} catch (IOException ex) {
