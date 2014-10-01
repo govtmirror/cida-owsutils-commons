@@ -1,18 +1,21 @@
 package gov.usgs.cida.owsutils.commons.shapefile.utils;
 
-import static org.junit.Assert.*;
-import static org.hamcrest.core.IsCollectionContaining.*;
-import static org.hamcrest.core.Is.*;
-
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.GeometryCollectionIterator;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.geom.MultiLineString;
+import com.vividsolutions.jts.geom.Point;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-
 import org.geotools.geometry.jts.JTSFactoryFinder;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsCollectionContaining.hasItem;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import org.junit.Test;
-
-import com.vividsolutions.jts.geom.*;
 
 public class PointIteratorTest {
 
@@ -72,9 +75,9 @@ public class PointIteratorTest {
 			coordinates[i] = new Coordinate(99.9+i, i/100.0);
 		}
 		
-		Collection<Point> xpected = new ArrayList<Point>(coordinates.length);
-		for (int i = 0; i < coordinates.length; i++) {
-			xpected.add(geometryFactory.createPoint(coordinates[i]));
+		Collection<Point> xpected = new ArrayList<>(coordinates.length);
+		for (Coordinate coordinate : coordinates) {
+			xpected.add(geometryFactory.createPoint(coordinate));
 		}
 		
 		LineString ls = geometryFactory.createLineString(coordinates);
@@ -91,9 +94,9 @@ public class PointIteratorTest {
 			coordinates[i] = new Coordinate(99.9+i, i/100.0);
 		}
 		
-		Collection<Point> xpected = new ArrayList<Point>(coordinates.length);
-		for (int i = 0; i < coordinates.length; i++) {
-			xpected.add(geometryFactory.createPoint(coordinates[i]));
+		Collection<Point> xpected = new ArrayList<>(coordinates.length);
+		for (Coordinate coordinate : coordinates) {
+			xpected.add(geometryFactory.createPoint(coordinate));
 		}
 		
 		Coordinate[] cc1 = Arrays.copyOfRange(coordinates, 0, 4);
