@@ -1,19 +1,24 @@
 package gov.usgs.cida.owsutils.commons.io;
 
+import gov.usgs.cida.owsutils.commons.io.exception.ShapefileFormatException;
 import gov.usgs.cida.owsutils.commons.shapefile.utils.IterableShapefileReader;
 import gov.usgs.cida.owsutils.commons.shapefile.utils.ShapeAndAttributes;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.UUID;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.AfterClass;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -136,7 +141,7 @@ public class FileHelperTest {
 		// At first this file has folders within the zip, which do not validate
 		try {
 			FileHelper.validateShapefileZip(zipWithSubfolder);
-		} catch (IOException ioe) {
+		} catch (IOException | ShapefileFormatException ioe) {
 			assertNotNull(ioe);
 		}
 
@@ -156,7 +161,7 @@ public class FileHelperTest {
 
 		try {
 			FileHelper.validateShapefileZip(zipWithSubfolder);
-		} catch (IOException ioe) {
+		} catch (IOException | ShapefileFormatException ioe) {
 			assertNotNull(ioe);
 		}
 
