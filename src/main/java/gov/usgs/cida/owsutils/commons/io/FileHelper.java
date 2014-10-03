@@ -1,6 +1,8 @@
 package gov.usgs.cida.owsutils.commons.io;
 
+import gov.usgs.cida.owsutils.commons.io.exception.ShapefileFormatException;
 import gov.usgs.cida.owsutils.commons.shapefile.utils.IterableShapefileReader;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileFilter;
@@ -22,6 +24,7 @@ import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
+
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -675,7 +678,7 @@ public class FileHelper extends FileUtils {
 		return true;
 	}
 
-	public static void validateShapefileZip(final File shapeZip) throws IOException {
+	public static void validateShapefileZip(final File shapeZip) throws IOException, ShapefileFormatException {
 		File temporaryDirectory = new File(getTempDirectory(), UUID.randomUUID().toString() + "-deleteme");
 		try {
 			if (!temporaryDirectory.mkdirs()) {
@@ -712,11 +715,15 @@ public class FileHelper extends FileUtils {
 
 			File[] shapefiles = listFiles(temporaryDirectory, (new String[]{"shp"}), false).toArray(new File[0]);
 			if (shapefiles.length == 0) {
-				throw new IOException("Shapefile archive needs to contain at least one shapefile");
+				throw new ShapefileFormatException("Shapefile archive needs to contain at least one shapefile");
 			} else if (shapefiles.length > 1) {
-				throw new IOException("Shapefile archive may only contain one shapefile");
+				throw new ShapefileFormatException("Shapefile archive may only contain one shapefile");
 			} else if (!validateShapeFile(shapefiles[0])) {
-				throw new IOException("Shapefile archive is not valid");
+				throw new ShapefileFormatException("Shapefile archive is not valid");
+			}
+			File[] prjfiles = FileHelper.listFiles(temporaryDirectory, (new String[]{"prj"}), false).toArray(new File[0]);
+			if (prjfiles.length == 0 || prjfiles.length > 1) {
+				throw new ShapefileFormatException("Shapefile archive needs to contain one prj file");
 			}
 		} finally {
 			forceDelete(temporaryDirectory);
