@@ -1,24 +1,22 @@
 package gov.usgs.cida.owsutils.commons.shapefile.utils;
 
-import java.util.Iterator;
-
-
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryCollectionIterator;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.MultiLineString;
 import com.vividsolutions.jts.geom.Point;
+import java.util.Iterator;
 
 public class PointIterator implements Iterator<Point> {
 
 	private GeometryCollectionIterator gIter;
 	private LineString thisGeom = null;
 	private int ptCt;
-	
-	public PointIterator(Geometry shape) {	
+
+	public PointIterator(Geometry shape) {
 		if (shape instanceof LineString) {
 			// hack around problem that LineString thinks it contains 1 geometry (besides itself)
-			thisGeom = (LineString)shape;
+			thisGeom = (LineString) shape;
 			gIter = null;
 		} else if (shape instanceof MultiLineString) {
 			gIter = new GeometryCollectionIterator(shape);
@@ -26,7 +24,7 @@ public class PointIterator implements Iterator<Point> {
 			throw new ClassCastException("Can't handle this type");
 		}
 	}
-	
+
 	@Override
 	public boolean hasNext() {
 		if (thisGeom != null) {
@@ -34,22 +32,22 @@ public class PointIterator implements Iterator<Point> {
 				thisGeom = null;
 			}
 		}
-		
+
 		if (gIter != null) {
 			while (thisGeom == null && gIter.hasNext()) {
-				Geometry nextGeom = (Geometry)gIter.next();
+				Geometry nextGeom = (Geometry) gIter.next();
 				// TODO Would be nice to extend this to other collections, but they lack the GetPointN method.
-				if ( nextGeom instanceof LineString) {
-					thisGeom = (LineString)nextGeom;
+				if (nextGeom instanceof LineString) {
+					thisGeom = (LineString) nextGeom;
 					ptCt = 0;
 				}
 			}
 		}
-		
+
 		if (thisGeom == null) {
 			return false;
 		}
-		
+
 		return ptCt < thisGeom.getNumPoints();
 	}
 
@@ -60,7 +58,7 @@ public class PointIterator implements Iterator<Point> {
 
 	@Override
 	public void remove() {
-	    throw new UnsupportedOperationException(getClass().getName());
+		throw new UnsupportedOperationException(getClass().getName());
 	}
 
 }
