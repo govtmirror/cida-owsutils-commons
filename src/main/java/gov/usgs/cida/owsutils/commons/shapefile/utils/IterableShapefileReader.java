@@ -4,6 +4,8 @@ import com.vividsolutions.jts.geom.CoordinateSequenceFactory;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Iterator;
 import org.geotools.data.shapefile.dbf.DbaseFileHeader;
@@ -12,6 +14,7 @@ import org.geotools.data.shapefile.files.ShpFiles;
 import org.geotools.data.shapefile.shp.ShapeHandler;
 import org.geotools.data.shapefile.shp.ShapefileReader;
 import org.geotools.data.shapefile.shp.ShapefileReader.Record;
+import org.slf4j.LoggerFactory;
 
 /**
  * Read a shapefile, including the M values (which the usual ShpaefileDataStore
@@ -22,6 +25,7 @@ import org.geotools.data.shapefile.shp.ShapefileReader.Record;
  */
 public class IterableShapefileReader implements Iterable<ShapeAndAttributes>, Iterator<ShapeAndAttributes>, AutoCloseable {
 
+	private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(IterableShapefileReader.class);
 	private ShapefileReader rdr;
 	private DbaseFileReader dbf;
 	public boolean used = false;
@@ -104,7 +108,17 @@ public class IterableShapefileReader implements Iterable<ShapeAndAttributes>, It
 	}
 
 	@Override
-	public void close() throws Exception {
+	public void close() {
+		try {
+			rdr.close();
+		} catch (IOException ex) {
+			// Skip
+		}
+		try {
+			dbf.close();
+		} catch (IOException ex) {
+			// Skip
+		}
 		shpFile.dispose();
 	}
 }

@@ -9,14 +9,17 @@ import java.util.Iterator;
 import org.apache.commons.io.FileUtils;
 import org.geotools.data.shapefile.dbf.DbaseFileHeader;
 import org.geotools.data.shapefile.dbf.DbaseFileReader.Row;
-import org.geotools.data.shapefile.shp.PointHandler;
 import org.geotools.data.shapefile.shp.ShapefileReader.Record;
 import org.junit.After;
 import org.junit.AfterClass;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -60,90 +63,90 @@ public class IterableShapefileReaderTest {
 	}
 
 	@Test
-	public void loadShapefile() throws IOException {
+	public void loadShapefile() throws Exception {
 		System.out.println("loadShapefile");
 		File tmpDir = new File(workDir, String.valueOf(new Date().getTime()));
 		FileUtils.forceMkdir(tmpDir);
 		FileHelper.unzipFile(tmpDir.getAbsolutePath(), NJBaseline);
-		IterableShapefileReader subject = new IterableShapefileReader(new File(tmpDir, "baseline.shp"));
-		assertTrue(subject.hasNext());
+		try (IterableShapefileReader subject = new IterableShapefileReader(new File(tmpDir, "baseline.shp"))) {
+			assertTrue(subject.hasNext());
+		}
 		try {
 			FileUtils.deleteDirectory(tmpDir);
 		} catch (IOException ex) {
 			// meh
 		}
 	}
-	
+
 	@Test
-	public void readDBFFile() throws IOException {
+	public void readDBFFile() throws Exception {
 		System.out.println("readDBFFile");
 		File tmpDir = new File(workDir, String.valueOf(new Date().getTime()));
 		FileUtils.forceMkdir(tmpDir);
 		FileHelper.unzipFile(tmpDir.getAbsolutePath(), NJBaseline);
-		IterableShapefileReader subject = new IterableShapefileReader(new File(tmpDir, "baseline.shp"));
-		
-		DbaseFileHeader dbfHeader = subject.getDbfHeader();
-		assertNotNull(dbfHeader);
-		assertEquals(dbfHeader.getNumFields(), 2);
-		assertEquals(dbfHeader.getFieldName(0), "Id");
-		assertEquals(dbfHeader.getFieldName(1), "temp");
-		try {
-			assertEquals(dbfHeader.getFieldName(2), "This will be an exception");
-		} catch (Exception ex) {
-			assertEquals(ex.getClass(), ArrayIndexOutOfBoundsException.class);
+		try (IterableShapefileReader subject = new IterableShapefileReader(new File(tmpDir, "baseline.shp"))) {
+			DbaseFileHeader dbfHeader = subject.getDbfHeader();
+
+			assertNotNull(dbfHeader);
+			assertEquals(dbfHeader.getNumFields(), 2);
+			assertEquals(dbfHeader.getFieldName(0), "Id");
+			assertEquals(dbfHeader.getFieldName(1), "temp");
+			try {
+				assertEquals(dbfHeader.getFieldName(2), "This will be an exception");
+			} catch (Exception ex) {
+				assertEquals(ex.getClass(), ArrayIndexOutOfBoundsException.class);
+			}
 		}
-		
 		try {
 			FileUtils.deleteDirectory(tmpDir);
 		} catch (IOException ex) {
 			// meh
 		}
 	}
-	
+
 	@Test
 	public void readPointsFile() throws IOException, Exception {
 		File tmpDir = new File(workDir, String.valueOf(new Date().getTime()));
 		FileUtils.forceMkdir(tmpDir);
 		FileHelper.unzipFile(tmpDir.getAbsolutePath(), pointsZipFile);
-		IterableShapefileReader subject = new IterableShapefileReader(new File(tmpDir, "test_shorelines_pts.shp"));
-		
-		DbaseFileHeader dbfHeader = subject.getDbfHeader();
-		assertNotNull(dbfHeader);
-		assertEquals(dbfHeader.getNumRecords(), 3379);
-		assertEquals(dbfHeader.getNumFields(), 6);
-		
-		Iterator<ShapeAndAttributes> iterator = subject.iterator();
-		assertTrue(iterator.hasNext());
-		
-		ShapeAndAttributes saa = iterator.next();
-		assertNotNull(saa);
-		
-		Record record = saa.record;
-		assertEquals(record.type.name, "Point");
-		assertEquals(record.maxX, record.minX, 0);
-		assertEquals(record.maxY, record.minY, 0);
-		assertEquals(record.number, 1);
-		assertEquals(record.envelope().centre().x, -1.756861581602166E7, 0);
-		assertEquals(record.envelope().centre().y, 2423192.79378892, 0);
-		assertEquals(record.envelope().centre().z, Double.NaN, 0);
-		
-		Row row = saa.row;
-		assertNull(row.read(0));
-		assertNull(row.read(1));
-		assertEquals(row.read(2), "01/01/1927");
-		assertEquals(row.read(3), 4.795d);
-		assertEquals(row.read(4), 1.0d);
-		assertEquals(row.read(5), 1.0d);
-		
-		try {
-			assertEquals(saa.row.read(6), "Nothing here");
-		} catch (Exception ex) {
-			assertEquals(ex.getClass(), java.lang.ArrayIndexOutOfBoundsException.class);
+		try (IterableShapefileReader subject = new IterableShapefileReader(new File(tmpDir, "test_shorelines_pts.shp"))) {
+			DbaseFileHeader dbfHeader = subject.getDbfHeader();
+			assertNotNull(dbfHeader);
+			assertEquals(dbfHeader.getNumRecords(), 3379);
+			assertEquals(dbfHeader.getNumFields(), 6);
+
+			Iterator<ShapeAndAttributes> iterator = subject.iterator();
+			assertTrue(iterator.hasNext());
+
+			ShapeAndAttributes saa = iterator.next();
+			assertNotNull(saa);
+
+			Record record = saa.record;
+			assertEquals(record.type.name, "Point");
+			assertEquals(record.maxX, record.minX, 0);
+			assertEquals(record.maxY, record.minY, 0);
+			assertEquals(record.number, 1);
+			assertEquals(record.envelope().centre().x, -1.756861581602166E7, 0);
+			assertEquals(record.envelope().centre().y, 2423192.79378892, 0);
+			assertEquals(record.envelope().centre().z, Double.NaN, 0);
+
+			Row row = saa.row;
+			assertNull(row.read(0));
+			assertNull(row.read(1));
+			assertEquals(row.read(2), "01/01/1927");
+			assertEquals(row.read(3), 4.795d);
+			assertEquals(row.read(4), 1.0d);
+			assertEquals(row.read(5), 1.0d);
+
+			try {
+				assertEquals(saa.row.read(6), "Nothing here");
+			} catch (Exception ex) {
+				assertEquals(ex.getClass(), java.lang.ArrayIndexOutOfBoundsException.class);
+			}
+
+			subject.close();
+			assertTrue("survived", true);
 		}
-		
-		subject.close();
-		assertTrue("survived", true);
-		
 		try {
 			FileUtils.deleteDirectory(tmpDir);
 		} catch (IOException ex) {
