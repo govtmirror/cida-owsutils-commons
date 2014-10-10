@@ -8,14 +8,18 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.AfterClass;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -34,10 +38,12 @@ public class FileHelperTest {
 	private String validShapefileZip2dbfName = "valid_shapezip_w_2dbf.zip";
 	private String macZippedZipName = "valid_shapezip.zip";
 	private String zipWithSubfolderZipName = "zip_with_subfolder.zip";
+	private String zipWithDifferentlyNamedContentsZipName = "NJ_baseline_w_orient.zip";
 	private File validShapefileZip = null;
 	private File validShapefileZip2dbf = null;
 	private File macZippedZip = null;
 	private File zipWithSubfolder = null;
+	private File zipWithDifferentlyNamedContents = null;
 	private FileInputStream fis = null;
 	private File tempArea = null;
 
@@ -80,6 +86,11 @@ public class FileHelperTest {
 		url = cl.getResource(sampleShapefileLocation + zipWithSubfolderZipName);
 		FileUtils.copyFileToDirectory(new File(url.toURI()), tempArea);
 		zipWithSubfolder = new File(tempArea, zipWithSubfolderZipName);
+
+		cl = Thread.currentThread().getContextClassLoader();
+		url = cl.getResource(sampleShapefileLocation + zipWithDifferentlyNamedContentsZipName);
+		FileUtils.copyFileToDirectory(new File(url.toURI()), tempArea);
+		zipWithDifferentlyNamedContents = new File(tempArea, zipWithDifferentlyNamedContentsZipName);
 
 	}
 
@@ -136,7 +147,6 @@ public class FileHelperTest {
 	@Test
 	public void testFlattenAndVerifyZipWithSubfolderZip() throws Exception {
 		System.out.println("flattenAndVerifyZipWithSubfolderZip");
-		Boolean expResult = false;
 
 		// At first this file has folders within the zip, which do not validate
 		try {
@@ -175,6 +185,45 @@ public class FileHelperTest {
 	}
 
 	@Test
+	public void testRenameDirectoryContentsUsingPassedString() throws IOException {
+		System.out.println("testRenameDirectoryContentsUsingPassedString");
+		File dir = new File(tempArea, new Date().getTime() + "");
+		String dirPath = dir.getAbsolutePath();
+		FileHelper.createDir(dir);
+		FileHelper.unzipFile(dirPath, zipWithDifferentlyNamedContents);
+		List<String> originalFileList = FileHelper.getFileList(dirPath, false);
+
+		FileHelper.renameDirectoryContents(dir, "test");
+		List<String> renamedFileList = FileHelper.getFileList(dirPath, false);
+
+		assertEquals("No files removed or added", renamedFileList.size(), originalFileList.size());
+		for (int fIdx = 0; fIdx < originalFileList.size(); fIdx++) {
+			assertNotEquals("files have actually been renamed", originalFileList.get(fIdx), renamedFileList.get(fIdx));
+			assertEquals("files have actually been renamed to TEST", FilenameUtils.getBaseName(renamedFileList.get(fIdx)), "test");
+		}
+	}
+
+	@Test
+	public void testRenameDirectoryContentsWithoutPassedString() throws IOException {
+		System.out.println("testRenameDirectoryContentsUsingPassedString");
+		File dir = new File(tempArea, new Date().getTime() + "");
+		String dirPath = dir.getAbsolutePath();
+		String dirName = dir.getName();
+		FileHelper.createDir(dir);
+		FileHelper.unzipFile(dirPath, zipWithDifferentlyNamedContents);
+		List<String> originalFileList = FileHelper.getFileList(dirPath, false);
+
+		FileHelper.renameDirectoryContents(dir);
+		List<String> renamedFileList = FileHelper.getFileList(dirPath, false);
+
+		assertEquals("No files removed or added", renamedFileList.size(), originalFileList.size());
+		for (int fIdx = 0; fIdx < originalFileList.size(); fIdx++) {
+			assertNotEquals("files have actually been renamed", originalFileList.get(fIdx), renamedFileList.get(fIdx));
+			assertEquals("files have actually been renamed to directory name", FilenameUtils.getBaseName(renamedFileList.get(fIdx)), dirName);
+		}
+	}
+
+	@Test
 	public void testLoadShapefileIntoReader() throws IOException {
 		System.out.println("testLoadShapefileIntoReader");
 		File tempLoc = FileHelper.createTemporaryDirectory();
@@ -184,7 +233,7 @@ public class FileHelperTest {
 			IterableShapefileReader reader = FileHelper.loadShapefileFromDirectoryIntoReader(tempLoc);
 			assertNotNull(reader);
 			assertTrue(reader.iterator().hasNext());
-			
+
 			ShapeAndAttributes shapeAndAttr = reader.iterator().next();
 			assertNotNull(shapeAndAttr);
 		} finally {

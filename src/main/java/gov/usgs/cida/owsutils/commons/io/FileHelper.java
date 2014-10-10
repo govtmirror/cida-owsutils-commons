@@ -27,9 +27,11 @@ import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.filefilter.RegexFileFilter;
 import org.apache.commons.io.filefilter.TrueFileFilter;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -126,6 +128,32 @@ public class FileHelper extends FileUtils {
 		}
 		log.debug(new StringBuilder("Successfully attained a byte array from file: ").append(file.getPath()).toString());
 		return bytes;
+	}
+
+	/**
+	 * @see FileHelper#renameDirectoryContents(java.io.File, java.lang.String) 
+	 * @param directory
+	 * @throws IOException 
+	 */
+	public static void renameDirectoryContents(File directory) throws IOException {
+		renameDirectoryContents(directory, null);
+	}
+	
+	/**
+	 *Renames all files within a directory to passed String
+	 * @param directory
+	 * @param name
+	 * @throws IOException
+	 */
+	public static void renameDirectoryContents(File directory, String name) throws IOException {
+		String renameTo = name;
+		if (StringUtils.isBlank(renameTo)) {
+			renameTo = directory.getName();
+		}
+
+		for (File file : directory.listFiles()) {
+			FileHelper.renameFile(file, renameTo + "." + FilenameUtils.getExtension(file.getName()));
+		}
 	}
 
 	/**
@@ -466,15 +494,15 @@ public class FileHelper extends FileUtils {
 	}
 
 	/**
-	 * @see FileHelper#flattenZipFile(java.lang.String) 
+	 * @see FileHelper#flattenZipFile(java.lang.String)
 	 * @param zipFile
 	 * @return
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	public static File flattenZipFile(File zipFile) throws IOException {
 		return flattenZipFile(zipFile.getAbsolutePath());
 	}
-	
+
 	/**
 	 * Brings all subdirectories in zip file up to the top level
 	 *
@@ -508,7 +536,7 @@ public class FileHelper extends FileUtils {
 		} finally {
 			forceDelete(temporaryDirectory);
 		}
-		
+
 		return zipFile;
 	}
 
