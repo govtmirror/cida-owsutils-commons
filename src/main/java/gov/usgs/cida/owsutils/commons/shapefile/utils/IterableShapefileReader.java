@@ -110,12 +110,12 @@ public class IterableShapefileReader implements Iterable<ShapeAndAttributes>, It
 		try {
 			rdr.close();
 		} catch (IOException ex) {
-			// Skip
+			LOGGER.warn("Could not close ShapefileReader", ex);
 		}
 		try {
 			dbf.close();
 		} catch (IOException ex) {
-			// Skip
+			LOGGER.warn("Could not close DBaseFileReader", ex);
 		}
 		shpFile.dispose();
 	}
