@@ -465,7 +465,24 @@ public class FileHelper extends FileUtils {
 		return System.getProperty("java.io.tmpdir");
 	}
 
-	public static void flattenZipFile(String zipFileLocation) throws IOException {
+	/**
+	 * @see FileHelper#flattenZipFile(java.lang.String) 
+	 * @param zipFile
+	 * @return
+	 * @throws IOException 
+	 */
+	public static File flattenZipFile(File zipFile) throws IOException {
+		return flattenZipFile(zipFile.getAbsolutePath());
+	}
+	
+	/**
+	 * Brings all subdirectories in zip file up to the top level
+	 *
+	 * @param zipFileLocation
+	 * @return flattened zip file
+	 * @throws IOException
+	 */
+	public static File flattenZipFile(String zipFileLocation) throws IOException {
 		File zipFile = new File(zipFileLocation);
 		if (!zipFile.exists()) {
 			throw new IOException("File at location " + zipFileLocation + " does not exist");
@@ -491,6 +508,8 @@ public class FileHelper extends FileUtils {
 		} finally {
 			forceDelete(temporaryDirectory);
 		}
+		
+		return zipFile;
 	}
 
 	public static void zipFilesInDirectory(File sourceDirectory, File file) throws IOException {
