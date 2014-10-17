@@ -39,11 +39,13 @@ public class FileHelperTest {
 	private String macZippedZipName = "valid_shapezip.zip";
 	private String zipWithSubfolderZipName = "zip_with_subfolder.zip";
 	private String zipWithDifferentlyNamedContentsZipName = "NJ_baseline_w_orient.zip";
+	private String zipWithSimilarlyNamedContentsZipName = "KauaiE_shorelines.zip";
 	private File validShapefileZip = null;
 	private File validShapefileZip2dbf = null;
 	private File macZippedZip = null;
 	private File zipWithSubfolder = null;
 	private File zipWithDifferentlyNamedContents = null;
+	private File zipWithSimilarlyNamedContents = null;
 	private FileInputStream fis = null;
 	private File tempArea = null;
 
@@ -92,6 +94,11 @@ public class FileHelperTest {
 		FileUtils.copyFileToDirectory(new File(url.toURI()), tempArea);
 		zipWithDifferentlyNamedContents = new File(tempArea, zipWithDifferentlyNamedContentsZipName);
 
+		cl = Thread.currentThread().getContextClassLoader();
+		url = cl.getResource(sampleShapefileLocation + zipWithSimilarlyNamedContentsZipName);
+		FileUtils.copyFileToDirectory(new File(url.toURI()), tempArea);
+		zipWithSimilarlyNamedContents = new File(tempArea, zipWithSimilarlyNamedContentsZipName);
+
 	}
 
 	@After
@@ -135,6 +142,16 @@ public class FileHelperTest {
 		FileHelper.flattenZipFile(zipWithSubfolder.getPath());
 		FileHelper.validateShapefileZip(zipWithSubfolder);
 		assertTrue(true);
+	}
+
+	@Test
+	public void testRenameDirectoryContentsWithContentsAlreadyNamedToDirectoryName() throws IOException {
+		System.out.println("testRenameDirectoryContentsWithContentsAlreadyNamedToDirectoryName");
+		File tempLoc = FileHelper.createTemporaryDirectory();
+		File subDir = new File(tempLoc, FilenameUtils.getBaseName(zipWithSimilarlyNamedContents.getName()));
+		FileUtils.forceMkdir(subDir);
+		FileHelper.unzipFile(subDir.getAbsolutePath(), zipWithSimilarlyNamedContents);
+		FileHelper.renameDirectoryContents(subDir);
 	}
 
 	@Test

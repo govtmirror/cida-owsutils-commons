@@ -168,6 +168,10 @@ public class FileHelper extends FileUtils {
 	public static boolean renameFile(final File fromFile, final String toFileName) throws IOException {
 		File toFile = new File(fromFile.getParent() + File.separator + toFileName);
 
+		if (toFile.exists()) {
+			return true;
+		}
+		
 		copyFile(fromFile, toFile);
 
 		if (!toFile.exists()) {
