@@ -6,10 +6,7 @@ import gov.usgs.cida.owsutils.commons.io.FileHelper;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
-import java.nio.charset.Charset;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.FactoryConfigurationError;
@@ -29,6 +26,8 @@ import org.slf4j.LoggerFactory;
  * @author isuftin
  */
 public class RequestResponse {
+	public static final String ERROR_STRING = "error";
+	public static final String SUCCESS_STRING = "success";
 
 	public static enum ResponseType {
 
@@ -43,7 +42,7 @@ public class RequestResponse {
 			}
 		}
 	}
-	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(RequestResponse.class);
+	private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(RequestResponse.class);
 
 	/**
 	 * Takes a HttpServletRequest, parses it for a specific parameter that
@@ -84,12 +83,17 @@ public class RequestResponse {
 	 * @param responseType Null value allowed. Will default to JSON
 	 */
 	public static void sendErrorResponse(HttpServletResponse response, Map<String, String> responseMap, ResponseType responseType) {
-		responseMap.put("success", "false");
+		responseMap.put(RequestResponse.SUCCESS_STRING, "false");
 
 		if (!responseMap.containsKey("serverCode")) {
 			responseMap.put("serverCode", "500");
 		}
 
+		String error = responseMap.get("error");
+		if (StringUtils.isNotBlank(error)) {
+			LOGGER.warn(error);
+		}
+		
 		if (responseType == null || responseType == ResponseType.JSON) {
 			sendJSONResponse(response, responseMap, false);
 		} else {
@@ -104,7 +108,7 @@ public class RequestResponse {
 	 * @param responseType Null value allowed. Will default to JSON
 	 */
 	public static void sendSuccessResponse(HttpServletResponse response, Map<String, String> responseMap, ResponseType responseType) {
-		responseMap.put("success", "true");
+		responseMap.put(RequestResponse.SUCCESS_STRING, "true");
 		if (responseType == null || responseType == ResponseType.JSON) {
 			sendJSONResponse(response, responseMap, true);
 		} else {
@@ -130,14 +134,14 @@ public class RequestResponse {
 			}
 			responseContent = root.asString();
 		} catch (ParserConfigurationException | FactoryConfigurationError | TransformerException ex) {
-			LOG.error("Could not send response XML.", ex);
+			LOGGER.error("Could not send response XML.", ex);
 		}
 
 		if (!isOk) {
 			try {
 				response.sendError(Integer.parseInt(responseMap.get("serverCode")), responseContent);
 			} catch (IOException ex) {
-				LOG.warn("Possible error sending response data back to client", ex);
+				LOGGER.warn("Possible error sending response data back to client", ex);
 			}
 		} else {
 			sendResponse(response, ResponseType.XML.toString(), responseContent, null);
@@ -151,7 +155,7 @@ public class RequestResponse {
 			try {
 				response.sendError(Integer.parseInt(responseMap.get("serverCode")), responseContent);
 			} catch (IOException ex) {
-				LOG.warn("Possible error sending response data back to client", ex);
+				LOGGER.warn("Possible error sending response data back to client", ex);
 			}
 		} else {
 			sendResponse(response, ResponseType.JSON.toString(), responseContent, null);
@@ -175,7 +179,7 @@ public class RequestResponse {
 		try (Writer writer = response.getWriter()) {
 			writer.write(content);
 		} catch (IOException ex) {
-			LOG.warn("Possible error sending response data back to client", ex);
+			LOGGER.warn("Possible error sending response data back to client", ex);
 		}
 	}
 }
