@@ -26,9 +26,9 @@ import org.slf4j.LoggerFactory;
  * @author isuftin
  */
 public class RequestResponse {
+
 	public static final String ERROR_STRING = "error";
 	public static final String SUCCESS_STRING = "success";
-
 	public static enum ResponseType {
 
 		XML, JSON;
@@ -93,7 +93,7 @@ public class RequestResponse {
 		if (StringUtils.isNotBlank(error)) {
 			LOGGER.warn(error);
 		}
-		
+
 		if (responseType == null || responseType == ResponseType.JSON) {
 			sendJSONResponse(response, responseMap, false);
 		} else {
@@ -150,7 +150,7 @@ public class RequestResponse {
 
 	static void sendJSONResponse(HttpServletResponse response, Map<String, String> responseMap, boolean isOk) {
 		String responseContent = new Gson().toJson(responseMap);
-		
+
 		if (!isOk) {
 			try {
 				response.sendError(Integer.parseInt(responseMap.get("serverCode")), responseContent);
@@ -160,7 +160,7 @@ public class RequestResponse {
 		} else {
 			sendResponse(response, ResponseType.JSON.toString(), responseContent, null);
 		}
-		
+
 	}
 
 	/**
@@ -181,5 +181,8 @@ public class RequestResponse {
 		} catch (IOException ex) {
 			LOGGER.warn("Possible error sending response data back to client", ex);
 		}
+	}
+
+	private RequestResponse() {
 	}
 }
