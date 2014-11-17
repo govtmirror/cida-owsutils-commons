@@ -178,6 +178,7 @@ public class RequestResponse {
 
 		try (Writer writer = response.getWriter()) {
 			writer.write(content);
+			writer.flush();
 		} catch (IOException ex) {
 			LOGGER.warn("Possible error sending response data back to client", ex);
 		}
