@@ -8,17 +8,17 @@ import java.net.URL;
 import java.util.Date;
 import java.util.Iterator;
 import org.apache.commons.io.FileUtils;
-import org.geotools.data.crs.ReprojectFeatureReader;
 import org.geotools.data.crs.ReprojectFeatureResults;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.junit.After;
 import org.junit.AfterClass;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -59,9 +59,9 @@ public class FeatureCollectionFromShpTest {
 
 	@After
 	public void tearDown() {
-		for (File file : FileUtils.listFiles(workDir, null, true)) {
+		FileUtils.listFiles(workDir, null, true).stream().forEach((file) -> {
 			FileUtils.deleteQuietly(file);
-		}
+		});
 	}
 
 	@Test

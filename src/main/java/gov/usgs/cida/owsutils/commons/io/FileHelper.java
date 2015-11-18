@@ -2,7 +2,6 @@ package gov.usgs.cida.owsutils.commons.io;
 
 import gov.usgs.cida.owsutils.commons.io.exception.ShapefileFormatException;
 import gov.usgs.cida.owsutils.commons.shapefile.utils.IterableShapefileReader;
-
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileFilter;
@@ -24,7 +23,6 @@ import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
-
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -42,7 +40,7 @@ import org.slf4j.LoggerFactory;
  */
 public class FileHelper extends FileUtils {
 
-	private static org.slf4j.Logger log = LoggerFactory.getLogger(FileHelper.class);
+	private static final org.slf4j.Logger log = LoggerFactory.getLogger(FileHelper.class);
 	private static final String SUFFIX_SHP = ".shp";
 	private static final String SUFFIX_SHX = ".shx";
 	private static final String SUFFIX_PRJ = ".prj";
@@ -96,51 +94,34 @@ public class FileHelper extends FileUtils {
 
 		log.debug(new StringBuilder("Attempting to get a byte array from file: ").append(file.getPath()).toString());
 
-		// Get the size of the file
-		long length = file.length();
-
 		// Maximum size of file cannot be larger than the Integer.MAX_VALUE
-		if (length > Integer.MAX_VALUE) {
+		if (file.length() > Integer.MAX_VALUE) {
 			throw new IOException("File is too large: File length: " + file.length() + " bytes. Maximum length: " + Integer.MAX_VALUE + " bytes.");
 		}
 
 		// Create the byte array to hold the data
-		byte[] bytes = new byte[(int) length];
+		byte[] bytes;
 
-		// Read in the bytes
-		int offset = 0, numRead = 0;
-
-		InputStream is = null;
-		try {
-			is = new FileInputStream(file);
-			while (offset < bytes.length && (numRead = is.read(bytes, offset, bytes.length - offset)) >= 0) {
-				offset += numRead;
-			}
-		} finally {
-			if (is != null) {
-				is.close();
-			}
+		try (InputStream is = new FileInputStream(file)) {
+			bytes = IOUtils.toByteArray(is);
 		}
 
-		// Ensure all the bytes have been read in
-		if (offset < bytes.length) {
-			throw new IOException("Could not completely read file " + file.getName());
-		}
 		log.debug(new StringBuilder("Successfully attained a byte array from file: ").append(file.getPath()).toString());
 		return bytes;
 	}
 
 	/**
-	 * @see FileHelper#renameDirectoryContents(java.io.File, java.lang.String) 
+	 * @see FileHelper#renameDirectoryContents(java.io.File, java.lang.String)
 	 * @param directory
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	public static void renameDirectoryContents(File directory) throws IOException {
 		renameDirectoryContents(directory, null);
 	}
-	
+
 	/**
-	 *Renames all files within a directory to passed String
+	 * Renames all files within a directory to passed String
+	 *
 	 * @param directory
 	 * @param name
 	 * @throws IOException
@@ -171,7 +152,7 @@ public class FileHelper extends FileUtils {
 		if (toFile.exists()) {
 			return true;
 		}
-		
+
 		copyFile(fromFile, toFile);
 
 		if (!toFile.exists()) {
@@ -236,10 +217,10 @@ public class FileHelper extends FileUtils {
 	 */
 	public static Collection<File> wipeOldFiles(File directory, Long cutoffTime, boolean deleteDirectory) {
 		if (directory == null || !directory.exists()) {
-			return new ArrayList<File>();
+			return new ArrayList<>();
 		}
 
-		Collection<File> result = new ArrayList<File>();
+		Collection<File> result = new ArrayList<>();
 		Collection<File> oldFiles = FileHelper.getFilesOlderThan(directory, cutoffTime, Boolean.TRUE);
 		for (File file : oldFiles) {
 			String logString = "Deleting File: \"" + file.toString() + "\" ... ";
@@ -279,7 +260,6 @@ public class FileHelper extends FileUtils {
 	 * object
 	 *
 	 * @param directory
-	 * @param removeAtSysExit
 	 * @return boolean true if already exists or created, false if directory
 	 * could not be created
 	 */
@@ -297,6 +277,7 @@ public class FileHelper extends FileUtils {
 	 *
 	 * @param directory
 	 * @return
+	 * @throws java.io.IOException
 	 */
 	public static boolean deleteDirRecursively(File directory) throws IOException {
 		if (!directory.exists()) {
@@ -311,6 +292,7 @@ public class FileHelper extends FileUtils {
 	 *
 	 * @param directory
 	 * @return
+	 * @throws java.io.IOException
 	 */
 	public static boolean deleteDirRecursively(String directory) throws IOException {
 		boolean result;
@@ -335,8 +317,8 @@ public class FileHelper extends FileUtils {
 	/**
 	 * Deletes a file at the location of the passed in File object.
 	 *
+	 * @param file
 	 * @see FileHelper#deleteFileQuietly(java.lang.String)
-	 * @param filePath
 	 * @return true if file has been deleted, false otherwise
 	 */
 	public static boolean deleteFileQuietly(File file) {
@@ -437,12 +419,12 @@ public class FileHelper extends FileUtils {
 		if (filePath == null) {
 			return null;
 		}
-		List<String> result = new ArrayList<String>();
+		List<String> result = new ArrayList<>();
 		Collection<File> fileList = listFiles((new File(filePath)), extensions, recursive);
 
-		for (File file : fileList) {
+		fileList.stream().forEach((file) -> {
 			result.add(file.getName());
-		}
+		});
 
 		return result;
 	}
@@ -667,28 +649,27 @@ public class FileHelper extends FileUtils {
 	 *
 	 * @param filePath System path to the directory
 	 * @param age
-	 * @param msPerDay
 	 * @param recursive
 	 * @return
 	 */
 	public static Collection<File> getFilesOlderThan(File filePath, Long age, Boolean recursive) {
 		if (filePath == null || !filePath.exists()) {
-			return new ArrayList<File>();
+			return new ArrayList<>();
 		}
 		Iterator<File> files;
 
-		if (recursive.booleanValue()) {
+		if (recursive) {
 			files = iterateFiles(filePath, TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE);
 		} else {
 			files = iterateFiles(filePath, TrueFileFilter.INSTANCE, null);
 		}
 
-		Collection<File> result = new ArrayList<File>();
+		Collection<File> result = new ArrayList<>();
 		Date date = new Date();
 		while (files.hasNext()) {
 			File file = files.next();
 
-			if (file.lastModified() < date.getTime() - age.longValue()) {
+			if (file.lastModified() < date.getTime() - age) {
 				result.add(file);
 				log.trace(new StringBuilder("Added ").append(file.getPath()).append(" to \"old files list\".").toString());
 			}
@@ -699,7 +680,7 @@ public class FileHelper extends FileUtils {
 
 	public static Boolean validateShapeFile(final File shapeFile) {
 		String shapefileName = shapeFile.getName();
-		String shapefileNamePrefix = shapefileName.substring(0, shapefileName.lastIndexOf("."));
+		String shapefileNamePrefix = shapefileName.substring(0, shapefileName.lastIndexOf('.'));
 		File shapefileDir = shapeFile.getParentFile();
 
 		// Find all files with filename with any extension
@@ -722,11 +703,7 @@ public class FileHelper extends FileUtils {
 		int shxCount = listFiles(shapefileDir, (new String[]{"shx"}), false).size();
 		int prjCount = listFiles(shapefileDir, (new String[]{"prj"}), false).size();
 
-		if (shpCount + shxCount + prjCount > 3) {
-			return false;
-		}
-
-		return true;
+		return shpCount + shxCount + prjCount <= 3;
 	}
 
 	public static void validateShapefileZip(final File shapeZip) throws IOException, ShapefileFormatException {
@@ -736,33 +713,30 @@ public class FileHelper extends FileUtils {
 				throw new IOException("Could not create temporary directory (" + temporaryDirectory.getCanonicalPath() + ") for processing");
 			}
 
-			ZipInputStream zipInputStream = new ZipInputStream(new BufferedInputStream(new FileInputStream(shapeZip)));
-			ZipEntry entry;
-			while ((entry = zipInputStream.getNextEntry()) != null) {
-				String currentExtension = entry.getName();
-				// We want to skip past directories, hidden files and metadata files (MACOSX ZIPPING FIX)
-				if (!entry.isDirectory()
-						&& !currentExtension.startsWith(".")
-						&& !currentExtension.contains(File.separator + ".")) {
-					File currentFile = new File(temporaryDirectory, currentExtension);
+			try (ZipInputStream zipInputStream = new ZipInputStream(new BufferedInputStream(new FileInputStream(shapeZip)))) {
+				ZipEntry entry;
+				while ((entry = zipInputStream.getNextEntry()) != null) {
+					String currentExtension = entry.getName();
+					// We want to skip past directories, hidden files and metadata files (MACOSX ZIPPING FIX)
+					if (!entry.isDirectory()
+							&& !currentExtension.startsWith(".")
+							&& !currentExtension.contains(File.separator + ".")) {
+						File currentFile = new File(temporaryDirectory, currentExtension);
 
-					FileOutputStream fos = null;
-					try {
-						currentFile.createNewFile();
-						fos = new FileOutputStream(currentFile);
-						IOUtils.copy(zipInputStream, fos);
-					} catch (IOException ioe) {
-						// This usually occurs because this file is inside of another dir
-						// so skip this file. Shapefiles inside with arbitrary directory 
-						// depth should first be preprocessed to be single-depth since 
-						// GS will not accept it otherwise
-					} finally {
-						IOUtils.closeQuietly(fos);
+						try {
+							currentFile.createNewFile();
+							try (FileOutputStream fos = new FileOutputStream(currentFile)) {
+								IOUtils.copy(zipInputStream, fos);
+							}
+						} catch (IOException ioe) {
+							// This usually occurs because this file is inside of another dir
+							// so skip this file. Shapefiles inside with arbitrary directory 
+							// depth should first be preprocessed to be single-depth since 
+							// GS will not accept it otherwise
+						}
 					}
 				}
-				System.gc();
 			}
-			IOUtils.closeQuietly(zipInputStream);
 
 			File[] shapefiles = listFiles(temporaryDirectory, (new String[]{"shp"}), false).toArray(new File[0]);
 			if (shapefiles.length == 0) {
@@ -773,7 +747,7 @@ public class FileHelper extends FileUtils {
 				throw new ShapefileFormatException("Shapefile archive is not valid");
 			}
 			File[] prjfiles = FileHelper.listFiles(temporaryDirectory, (new String[]{"prj"}), false).toArray(new File[0]);
-			if (prjfiles.length == 0 || prjfiles.length > 1) {
+			if (prjfiles.length != 1) {
 				throw new ShapefileFormatException("Shapefile archive needs to contain one prj file");
 			}
 		} finally {

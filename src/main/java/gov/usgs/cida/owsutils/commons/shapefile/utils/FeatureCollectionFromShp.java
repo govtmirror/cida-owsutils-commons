@@ -75,23 +75,28 @@ public class FeatureCollectionFromShp {
 
 		Map<String, URL> connectParameters = new HashMap<>();
 		connectParameters.put("url", shp);
-		DataStore dataStore = DataStoreFinder.getDataStore(connectParameters);
-		String[] typeNames = dataStore.getTypeNames();
-		String name = null;
-		if (typeNames.length == 1) {
-			name = typeNames[0];
-		} else {
-			throw new RuntimeException("DataStore has no available features. I don't know how to deal with this");
+		DataStore dataStore = null;
+		try {
+			dataStore = DataStoreFinder.getDataStore(connectParameters);
+			String[] typeNames = dataStore.getTypeNames();
+			String name = null;
+			if (typeNames.length == 1) {
+				name = typeNames[0];
+			} else {
+				throw new RuntimeException("DataStore has no available features. I don't know how to deal with this");
+			}
+
+			if (StringUtils.isBlank(name)) {
+				throw new RuntimeException("DataStore name list is missing.");
+			}
+
+			FeatureSource<SimpleFeatureType, SimpleFeature> featureSource = dataStore.getFeatureSource(name);
+			featureCollection = featureSource.getFeatures();
+		} finally {
+			if (dataStore != null) {
+				dataStore.dispose();
+			}
 		}
-
-		// TODO- During testing, name is sometimes null which throws NPE in dataStore.getSchema(name) - Why?
-		if (StringUtils.isBlank(name)) {
-			throw new RuntimeException("DataStore name list is missing.");
-		}
-
-		FeatureSource<SimpleFeatureType, SimpleFeature> featureSource = dataStore.getFeatureSource(name);
-		featureCollection = featureSource.getFeatures();
-
 		return featureCollection;
 	}
 

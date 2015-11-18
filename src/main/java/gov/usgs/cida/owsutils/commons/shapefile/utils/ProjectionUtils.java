@@ -1,4 +1,4 @@
-package gov.usgs.cida.owsutils.commons.shapefile;
+package gov.usgs.cida.owsutils.commons.shapefile.utils;
 
 import gov.usgs.cida.owsutils.commons.io.FileHelper;
 import java.io.File;
@@ -12,6 +12,7 @@ import org.geotools.referencing.CRS;
 import org.geotools.referencing.operation.projection.ProjectionException;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.slf4j.LoggerFactory;
 
@@ -133,7 +134,7 @@ public class ProjectionUtils {
         result = CRS.lookupIdentifier(crs, true);
 
         if (result == null && crs instanceof ProjectedCRS && useBaseCRSFailover) {
-            result = CRS.lookupIdentifier(((ProjectedCRS) crs).getBaseCRS(), true);
+            result = CRS.lookupIdentifier(((GeneralDerivedCRS) crs).getBaseCRS(), true);
         }
         LOG.debug("Found " + result);
         return result;
