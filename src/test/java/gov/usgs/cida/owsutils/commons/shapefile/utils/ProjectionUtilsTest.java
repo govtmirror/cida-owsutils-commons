@@ -1,5 +1,6 @@
-package gov.usgs.cida.owsutils.commons.shapefile;
+package gov.usgs.cida.owsutils.commons.shapefile.utils;
 
+import gov.usgs.cida.owsutils.commons.shapefile.utils.ProjectionUtils;
 import gov.usgs.cida.owsutils.commons.io.FileHelper;
 import java.io.File;
 import java.io.FileInputStream;

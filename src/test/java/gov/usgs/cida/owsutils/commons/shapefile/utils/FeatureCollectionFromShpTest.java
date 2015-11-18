@@ -59,9 +59,9 @@ public class FeatureCollectionFromShpTest {
 
 	@After
 	public void tearDown() {
-		for (File file : FileUtils.listFiles(workDir, null, true)) {
+		FileUtils.listFiles(workDir, null, true).stream().forEach((file) -> {
 			FileUtils.deleteQuietly(file);
-		}
+		});
 	}
 
 	@Test

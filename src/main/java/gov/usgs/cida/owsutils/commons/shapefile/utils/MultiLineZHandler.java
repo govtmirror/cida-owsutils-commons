@@ -128,7 +128,7 @@ public class MultiLineZHandler implements ShapeHandler {
 		CoordinateSequence[] lines = new CoordinateSequence[numParts];
 		int finish, start = 0;
 		int length = 0;
-		boolean clonePoint = false;
+		boolean clonePoint;
 		final DoubleBuffer doubleBuffer = buffer.asDoubleBuffer();
 		for (int part = 0; part < numParts; part++) {
 			start = partOffsets[part];
@@ -249,8 +249,7 @@ public class MultiLineZHandler implements ShapeHandler {
 			}
 		}
 
-		for (int lineN = 0; lineN < lines.length; lineN++) {
-			CoordinateSequence coords = lines[lineN];
+		for (CoordinateSequence coords : lines) {
 			if (shapeType == ShapeType.ARCZ) {
 				JTSUtilities.zMinMax(coords, zExtreame);
 			}
@@ -271,8 +270,7 @@ public class MultiLineZHandler implements ShapeHandler {
 				buffer.putDouble(zExtreame[1]);
 			}
 
-			for (int lineN = 0; lineN < lines.length; lineN++) {
-				final CoordinateSequence coords = lines[lineN];
+			for (CoordinateSequence coords : lines) {
 				final int ncoords = coords.size();
 				double z;
 				for (int t = 0; t < ncoords; t++) {
