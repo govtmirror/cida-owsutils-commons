@@ -109,6 +109,13 @@ public class FileHelperTest {
 		FileHelper.validateShapefileZip(validShapefileZip);
 		assertTrue(true);
 	}
+	
+	@Test
+	public void testIzZipFile() throws IOException {
+		System.out.println("testIzZipFile");
+		boolean result = FileHelper.isZipFile(validShapefileZip);
+		assertTrue(result);
+	}
 
 	/**
 	 * Multiple dbf files are allowed b/c this is a common way++ for projects to

@@ -11,6 +11,7 @@ import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.RandomAccessFile;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -198,6 +199,21 @@ public class FileHelper extends FileUtils {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Performs a read of the file header to check if the file is a zip file
+	 * 
+	 * @param file
+	 * @return
+	 * @throws IOException 
+	 */
+	public static boolean isZipFile(File file) throws IOException {
+		long n;
+		try (RandomAccessFile raf = new RandomAccessFile(file, "r")) {
+			n = raf.readInt();
+		}
+		return n == 0x504B0304;
 	}
 
 	public static void copyInputStreamToFile(InputStream is, File destinationFile) throws IOException {
