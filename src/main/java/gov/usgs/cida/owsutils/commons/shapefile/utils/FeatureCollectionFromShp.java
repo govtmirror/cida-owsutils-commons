@@ -86,7 +86,6 @@ public class FeatureCollectionFromShp {
 				throw new RuntimeException("DataStore has no available features. I don't know how to deal with this");
 			}
 
-			// TODO- During testing, name is sometimes null which throws NPE in dataStore.getSchema(name) - Why?
 			if (StringUtils.isBlank(name)) {
 				throw new RuntimeException("DataStore name list is missing.");
 			}

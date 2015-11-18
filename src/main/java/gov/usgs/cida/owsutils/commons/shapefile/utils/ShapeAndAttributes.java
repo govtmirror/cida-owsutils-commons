@@ -7,8 +7,7 @@ import org.geotools.data.shapefile.dbf.DbaseFileReader;
 import org.geotools.data.shapefile.dbf.DbaseFileReader.Row;
 import org.geotools.data.shapefile.shp.ShapefileReader.Record;
 
-public class ShapeAndAttributes
-		implements Iterable<Point> {
+public class ShapeAndAttributes implements Iterable<Point> {
 
 	public final Record record;						// shape
 	public final DbaseFileReader.Row row;				// dbf record

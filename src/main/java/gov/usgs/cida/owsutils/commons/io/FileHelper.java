@@ -40,7 +40,7 @@ import org.slf4j.LoggerFactory;
  */
 public class FileHelper extends FileUtils {
 
-	private static org.slf4j.Logger log = LoggerFactory.getLogger(FileHelper.class);
+	private static final org.slf4j.Logger log = LoggerFactory.getLogger(FileHelper.class);
 	private static final String SUFFIX_SHP = ".shp";
 	private static final String SUFFIX_SHX = ".shx";
 	private static final String SUFFIX_PRJ = ".prj";
