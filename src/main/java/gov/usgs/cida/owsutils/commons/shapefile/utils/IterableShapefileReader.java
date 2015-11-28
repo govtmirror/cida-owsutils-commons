@@ -31,16 +31,16 @@ public class IterableShapefileReader implements Iterable<ShapeAndAttributes>, It
 	private ShpFiles shpFile;
 	private ShapeHandler shapeHandler;
 
-	public IterableShapefileReader(String fn, ShapeHandler shapeHandler) {
+	public IterableShapefileReader(String fileName, ShapeHandler shapeHandler) {
 		if (shapeHandler == null) {
 			throw new IllegalArgumentException("A ShapeHandler is required");
 		}
 		this.shapeHandler = shapeHandler;
-		init(new File(fn + ".shp"));
+		init(new File(fileName + ".shp"));
 	}
 
-	public IterableShapefileReader(File f) {
-		init(f);
+	public IterableShapefileReader(File file) {
+		init(file);
 	}
 
 	public DbaseFileHeader getDbfHeader() {
@@ -58,10 +58,10 @@ public class IterableShapefileReader implements Iterable<ShapeAndAttributes>, It
 
 		try {
 			shpFile = new ShpFiles(file);
-			CoordinateSequenceFactory x = com.vividsolutions.jtsexample.geom.ExtendedCoordinateSequenceFactory.instance();
-			GeometryFactory gf = new GeometryFactory(x);
-
-			rdr = new ShapefileReader(shpFile, false, false, gf);
+			CoordinateSequenceFactory coordSeqFactory = com.vividsolutions.jtsexample.geom.ExtendedCoordinateSequenceFactory.instance();
+			GeometryFactory gf = new GeometryFactory(coordSeqFactory);
+			
+			rdr = new ShapefileReader(shpFile, false, true, gf);
 			rdr.setHandler(this.shapeHandler);
 
 			Charset charset = Charset.defaultCharset();

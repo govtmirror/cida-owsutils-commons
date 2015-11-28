@@ -131,7 +131,7 @@ public class ProjectionUtilsTest {
 
     @Test
     public void testGetPRJByteArrayFromMultidirShapefileZip() throws Exception {
-        System.out.println("getPRJByteArrayFromMultidirShapefileZip");
+        System.out.println("testGetPRJByteArrayFromMultidirShapefileZip");
         File shapefile = zipWithSubfolderZip;
         byte[] result = ProjectionUtils.getPRJByteArrayFromShapefileZip(shapefile);
         assertNotEquals(result.length, 0);
@@ -139,7 +139,7 @@ public class ProjectionUtilsTest {
 
     @Test
     public void testGetProjectionFromShapefile() throws Exception {
-        System.out.println("getPRJByteArrayFromMultidirShapefileZip");
+        System.out.println("testGetProjectionFromShapefile");
         File shapefile = validShapefileZip;
         try {
             ProjectionUtils.getProjectionFromShapefileZip(shapefile, false);
