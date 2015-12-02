@@ -31,6 +31,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.filefilter.RegexFileFilter;
 import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.commons.lang.StringUtils;
+import org.geotools.data.shapefile.files.ShpFiles;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -785,7 +786,7 @@ public class FileHelper extends FileUtils {
 		} else if (shapefiles.size() > 1) {
 			throw new IOException("Multiple shapefiles at location");
 		} else {
-			reader = new IterableShapefileReader(shapefiles.iterator().next());
+			reader = new IterableShapefileReader(new ShpFiles(shapefiles.iterator().next()));
 		}
 		return reader;
 	}

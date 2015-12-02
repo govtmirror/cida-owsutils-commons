@@ -9,6 +9,7 @@ import java.util.Iterator;
 import org.apache.commons.io.FileUtils;
 import org.geotools.data.shapefile.dbf.DbaseFileHeader;
 import org.geotools.data.shapefile.dbf.DbaseFileReader.Row;
+import org.geotools.data.shapefile.files.ShpFiles;
 import org.geotools.data.shapefile.shp.ShapefileReader.Record;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -67,7 +68,7 @@ public class IterableShapefileReaderTest {
 		File tmpDir = new File(workDir, String.valueOf(new Date().getTime()));
 		FileUtils.forceMkdir(tmpDir);
 		FileHelper.unzipFile(tmpDir.getAbsolutePath(), NJBaseline);
-		try (IterableShapefileReader subject = new IterableShapefileReader(new File(tmpDir, "baseline.shp"))) {
+		try (IterableShapefileReader subject = new IterableShapefileReader(new ShpFiles(new File(tmpDir, "baseline.shp")))) {
 			assertTrue(subject.hasNext());
 		}
 		try {
@@ -83,7 +84,7 @@ public class IterableShapefileReaderTest {
 		File tmpDir = new File(workDir, String.valueOf(new Date().getTime()));
 		FileUtils.forceMkdir(tmpDir);
 		FileHelper.unzipFile(tmpDir.getAbsolutePath(), NJBaseline);
-		try (IterableShapefileReader subject = new IterableShapefileReader(new File(tmpDir, "baseline.shp"))) {
+		try (IterableShapefileReader subject = new IterableShapefileReader(new ShpFiles(new File(tmpDir, "baseline.shp")))) {
 			DbaseFileHeader dbfHeader = subject.getDbfHeader();
 
 			assertNotNull(dbfHeader);
@@ -108,7 +109,7 @@ public class IterableShapefileReaderTest {
 		File tmpDir = new File(workDir, String.valueOf(new Date().getTime()));
 		FileUtils.forceMkdir(tmpDir);
 		FileHelper.unzipFile(tmpDir.getAbsolutePath(), pointsZipFile);
-		try (IterableShapefileReader subject = new IterableShapefileReader(new File(tmpDir, "test_shorelines_pts.shp"))) {
+		try (IterableShapefileReader subject = new IterableShapefileReader(new ShpFiles(new File(tmpDir, "test_shorelines_pts.shp")))) {
 			DbaseFileHeader dbfHeader = subject.getDbfHeader();
 			assertNotNull(dbfHeader);
 			assertEquals(dbfHeader.getNumRecords(), 3379);
@@ -143,7 +144,6 @@ public class IterableShapefileReaderTest {
 				assertEquals(ex.getClass(), java.lang.ArrayIndexOutOfBoundsException.class);
 			}
 
-			subject.close();
 			assertTrue("survived", true);
 		}
 		try {

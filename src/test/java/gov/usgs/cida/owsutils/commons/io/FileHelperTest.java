@@ -42,7 +42,6 @@ public class FileHelperTest {
 	private File zipWithSubfolder = null;
 	private File zipWithDifferentlyNamedContents = null;
 	private File zipWithSimilarlyNamedContents = null;
-	private FileInputStream fis = null;
 	private File tempArea = null;
 
 	public FileHelperTest() {
@@ -99,7 +98,6 @@ public class FileHelperTest {
 
 	@After
 	public void afterTest() throws Exception {
-		IOUtils.closeQuietly(fis);
 		FileUtils.forceDelete(tempArea);
 	}
 
@@ -249,8 +247,7 @@ public class FileHelperTest {
 		File tempLoc = FileHelper.createTemporaryDirectory();
 		FileHelper.unzipFile(tempLoc.getAbsolutePath(), validShapefileZip);
 
-		try {
-			IterableShapefileReader reader = FileHelper.loadShapefileFromDirectoryIntoReader(tempLoc);
+		try (IterableShapefileReader reader = FileHelper.loadShapefileFromDirectoryIntoReader(tempLoc);){
 			assertNotNull(reader);
 			assertTrue(reader.iterator().hasNext());
 
