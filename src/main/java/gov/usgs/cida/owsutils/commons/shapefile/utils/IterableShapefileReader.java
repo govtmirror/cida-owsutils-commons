@@ -26,21 +26,23 @@ public class IterableShapefileReader implements Iterable<ShapeAndAttributes>, It
 	private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(IterableShapefileReader.class);
 	private ShapefileReader rdr;
 	private DbaseFileReader dbf;
-	public boolean used = false;
+	public boolean initialized = false;
 	private File file;
-	private ShpFiles shpFile;
 	private ShapeHandler shapeHandler;
+	private ShpFiles shapeFiles;
 
-	public IterableShapefileReader(String fileName, ShapeHandler shapeHandler) {
+	public IterableShapefileReader(ShpFiles shapeFiles, ShapeHandler shapeHandler) {
 		if (shapeHandler == null) {
 			throw new IllegalArgumentException("A ShapeHandler is required");
 		}
 		this.shapeHandler = shapeHandler;
-		init(new File(fileName + ".shp"));
+		this.shapeFiles = shapeFiles;
+		init();
 	}
 
-	public IterableShapefileReader(File file) {
-		init(file);
+	public IterableShapefileReader(ShpFiles shapeFiles) {
+		this.shapeFiles = shapeFiles;
+		init();
 	}
 
 	public DbaseFileHeader getDbfHeader() {
@@ -48,24 +50,21 @@ public class IterableShapefileReader implements Iterable<ShapeAndAttributes>, It
 	}
 
 	public ShpFiles getShpFiles() {
-		return shpFile;
+		return shapeFiles;
 	}
 
-	private void init(File f) {
-		file = f;
-
-		used = false;
+	private void init() {
+		initialized = false;
 
 		try {
-			shpFile = new ShpFiles(file);
 			CoordinateSequenceFactory coordSeqFactory = com.vividsolutions.jtsexample.geom.ExtendedCoordinateSequenceFactory.instance();
 			GeometryFactory gf = new GeometryFactory(coordSeqFactory);
 			
-			rdr = new ShapefileReader(shpFile, false, true, gf);
+			rdr = new ShapefileReader(shapeFiles, false, true, gf);
 			rdr.setHandler(this.shapeHandler);
 
 			Charset charset = Charset.defaultCharset();
-			dbf = new DbaseFileReader(shpFile, false, charset);
+			dbf = new DbaseFileReader(shapeFiles, false, charset);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -73,8 +72,8 @@ public class IterableShapefileReader implements Iterable<ShapeAndAttributes>, It
 
 	@Override
 	public synchronized Iterator<ShapeAndAttributes> iterator() {
-		if (used) {
-			init(file);
+		if (initialized) {
+			init();
 		}
 		return this;
 	}
@@ -90,7 +89,7 @@ public class IterableShapefileReader implements Iterable<ShapeAndAttributes>, It
 
 	@Override
 	public synchronized ShapeAndAttributes next() {
-		used = true;
+		initialized = true;
 		try {
 			Record rec = rdr.nextRecord();
 			DbaseFileReader.Row row = dbf.readRow();
@@ -117,6 +116,6 @@ public class IterableShapefileReader implements Iterable<ShapeAndAttributes>, It
 		} catch (IOException ex) {
 			LOGGER.warn("Could not close DBaseFileReader", ex);
 		}
-		shpFile.dispose();
+		shapeFiles.dispose();
 	}
 }
